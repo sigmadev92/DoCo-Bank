@@ -1,0 +1,10 @@
+-> frontend -> 
+react and react-redux toolkit
+1. npx create-react-app . (dot for current folder)
+2. tailwind css - 
+    npm install -D tailwindcss
+    npx tailwindcss init
+3. redux and toolkit
+    npm i react-redux
+    npm i @reduxjs/toolkit
+4. 

@@ -16,10 +16,6 @@ Authentication and authorization - mail and number -> passport and jwt, nodemail
 
 
 
--> frontend -> 
-react and react-redux toolkit
-1. npx create-react-app . (dot for current folder)
-2. 
 
 
 
