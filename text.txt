@@ -1,0 +1,30 @@
+bank server
+
+1. account create
+2. transaction - debit and credit ->
+3. update account details + 
+4. delete account 
+5. view account 
+6. Add money to self account 
+7. view balance
+
+Authentication and authorization - mail and number -> passport and jwt, nodemailer 
+
+--> Schema
+1. User details -> name, email, phone Number, Account Number, Balance 
+2. Transaction record -> debit and credit in each accounts  
+
+
+
+-> frontend -> 
+react and react-redux toolkit
+1. npx create-react-app . (dot for current folder)
+2. 
+
+
+
+
+
+----------------------------------------------------------------------------------
+Deployement Steps!
+ 
