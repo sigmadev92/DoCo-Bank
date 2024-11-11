@@ -1,7 +1,33 @@
 // import users from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import users from "../models/userModel.js";
-import jwt from "jsonwebtoken";  // Import jwt
+import jwt from "jsonwebtoken";
+
+// Helper function to generate a unique 14-digit account number
+async function generateUniqueAccountNumber() {
+  let accountNumber;
+  let isUnique = false;
+
+  while (!isUnique) {
+    // Generate a random 14-digit number
+    accountNumber = Math.floor(
+      10000000000000 + Math.random() * 90000000000000
+    ).toString();
+
+    // Check if the generated account number already exists in the database
+    const existingUser = await users.findOne({ accountNumber });
+    if (!existingUser) {
+      isUnique = true; // Exit loop if account number is unique
+    }
+  }
+
+  return accountNumber;
+}
+
+// Helper function to generate a 6-digit OTP
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit random number
+}
 
 // register controller -> First name, last name, Phone number, email, state, city, pinCode, Address, Password, Account number, DigitalPin, balance, Profile photo
 export async function registerController(req, res) {
@@ -11,7 +37,7 @@ export async function registerController(req, res) {
     const UserAlreadyExist = await users.findOne({
       $or: [{ email: req.body.email }, { phoneNumber: req.body.phoneNumber }],
     });
-      
+
     if (UserAlreadyExist) {
       console.log("Email or Phone Number already registered");
       return res.status(400).json({
@@ -24,12 +50,21 @@ export async function registerController(req, res) {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const hashedDigitalPin = await bcrypt.hash(req.body.digitalPin, 10);
 
+    // Generate a unique 14-digit account number
+    const accountNumber = await generateUniqueAccountNumber();
+
+    // Generate a 6-digit OTP and set expiration time (e.g., 10 minutes from now)
+    const otp = generateOTP();
+    const otpExpiration = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
+
     // Create new user with hashed credentials
     const newUser = new users({
       ...req.body,
       password: hashedPassword,
       digitalPin: hashedDigitalPin,
-      balance: req.body.balance || 0, // Initialize balance if not provided
+      accountNumber: accountNumber,
+      otp: otp,
+      otpExpiration: otpExpiration,
     });
 
     await newUser.save();
@@ -102,7 +137,7 @@ export async function loginController(req, res) {
   }
 }
 
-// forgot password  
+// forgot password
 export async function forgotPasswordController(req, res) {
   console.log(`userController : forgot password`);
   const { email, accountNumber, newPassword } = req.body;
@@ -133,7 +168,9 @@ export async function forgotPasswordController(req, res) {
       message: "Password reset successful",
     });
   } catch (error) {
-    console.error(`userController : forgot password controller : error : ${error}`);
+    console.error(
+      `userController : forgot password controller : error : ${error}`
+    );
     res.status(500).json({
       status: false,
       message: "Something went wrong while resetting the password.",

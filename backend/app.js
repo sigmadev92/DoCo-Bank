@@ -1,7 +1,7 @@
 // backend/app.js
 import express from "express";
 import dotenv from "dotenv";
-import dbConnection from "./config/dbConfig.js"; 
+import dbConnection from "./config/dbConfig.js";
 import userRouter from "./routes/userRoute.js";
 import accountRouter from "./routes/accountRoute.js";
 import pinRouter from "./routes/pinRoute.js";
