@@ -6,6 +6,7 @@ import {
   forgotPasswordController,
   verifyOtp,
   requestOtp,
+  getCurrentUserDetails,
 } from "../controllers/userController.js";
 // import authMiddleware from "../middleware/authMiddleware.js";
 import { upload } from "../library/Multer.js";
@@ -19,6 +20,7 @@ router.post("/verify-otp", verifyOtp);
 router.post("/register", upload.single("profilePhoto"), registerController);
 
 router.post("/login", loginController);
+router.get("/get-current-user-details/:userId", getCurrentUserDetails);
 
 router.post("/forgot-password", forgotPasswordController);
 

@@ -15,8 +15,16 @@ import TransactionHistory from "./pages/TransactionHistory";
 import Transfer from "./pages/Transfer";
 import WithDraw from "./pages/WithDraw";
 import Deposit from "./pages/Deposit";
+import { useDispatch } from "react-redux";
+import { fetchUserDetails } from "./redux/slices/userSlice";
+import { useEffect } from "react";
 
 function App() {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchUserDetails());
+  }, []);
+
   return (
     <>
       <div className="App">

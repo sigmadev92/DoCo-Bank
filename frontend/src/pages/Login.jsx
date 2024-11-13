@@ -1,26 +1,36 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LoginUser } from "../api/LoginFunction";
 import { toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
+import { setAuth } from "../redux/slices/userSlice";
+import { Navigate } from "react-router-dom";
 
 export default function Login() {
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user);
 
   const [loginFormData, setLoginFormData] = useState({
     email: "",
     password: "",
   });
 
-  // const { email, password } = loginFormData;
-  function handleLoginChange(event) {
-    setLoginFormData((prev) => {
-      return { ...prev, [event.target.name]: event.target.value };
-    });
+  if (user.loggedIn) {
+    return <Navigate to="/" />;
   }
 
-  useEffect(() => {
-    console.log("Updated loginFormData:", loginFormData);
-  }, [loginFormData]);
+  // const { email, password } = loginFormData;
+  function handleLoginChange(event) {
+    const { name, value } = event.target;
+
+    setLoginFormData((prev) => {
+      return {
+        ...prev,
+        [name]: name === "email" ? value.toLowerCase() : value,
+      };
+    });
+  }
 
   async function handleLoginSubmit(event) {
     event.preventDefault();
@@ -28,11 +38,13 @@ export default function Login() {
     try {
       const response = await LoginUser(loginFormData);
       if (response.status) {
+        console.log(response.userData._id);
         toast.success("Login Successfully!");
+        dispatch(setAuth(response.userData));
+        localStorage.setItem("token", response.token);
+        localStorage.setItem("userId", response.userData._id);
 
-        localStorage.setItem("Token", response.Token);
-        console.log(localStorage);
-        Navigate("/");
+        return navigate("/");
       } else {
         toast.error("Something went wrong!", response.message);
       }

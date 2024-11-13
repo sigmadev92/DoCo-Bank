@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {  useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { userUrl } from "../api/URL";
@@ -94,14 +94,19 @@ export default function Register() {
 
   // Function to handle input change
   function handleChange(event) {
+    const { name, value } = event.target;
+
     setFormData((prev) => {
-      return { ...prev, [event.target.name]: event.target.value };
+      return {
+        ...prev,
+        [name]: name === "email" ? value.toLowerCase() : value,
+      };
     });
   }
 
-  useEffect(() => {
-    console.log("Updated formData:", formData);
-  }, [formData]);
+  // useEffect(() => {
+  //   console.log("Updated formData:", formData);
+  // }, [formData]);
 
   const validate = () => {
     const newErrors = {};

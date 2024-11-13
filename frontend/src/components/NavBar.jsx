@@ -1,11 +1,30 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { IoMdLogIn } from "react-icons/io";
-import { FaHome } from "react-icons/fa";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { IoMdLogIn, IoMdLogOut } from "react-icons/io";
+import { FaHome, FaUserAlt } from "react-icons/fa";
 import Logo from "../images/Logo.jpeg";
-import { FaUserAlt } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteAuth } from "../redux/slices/userSlice";
 
 export default function NavBar() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [active, setActive] = useState("/");
+
+  const user = useSelector((state) => state.user);
+
+  const handleNavigate = (path) => {
+    setActive(path);
+    navigate(path);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    dispatch(deleteAuth());
+    handleNavigate("/login");
+  };
+
   return (
     <nav className="bg-navy text-white shadow-md">
       <div className="px-4 sm:px-6 lg:px-8">
@@ -26,29 +45,56 @@ export default function NavBar() {
           </div>
 
           <div className="flex text-end items-center gap-4 sm:gap-6">
-            {/* Home icon with responsive sizing */}
+            {/* Home icon */}
             <Link
               to="/"
-              className="text-2xl sm:text-3xl lg:text-4xl hover:text-teal-200 transition ease-in-out duration-500"
+              className={`text-2xl sm:text-3xl lg:text-4xl transition ease-in-out duration-500 ${
+                active === "/" ? "text-teal-200" : "hover:text-teal-200"
+              }`}
+              onClick={() => handleNavigate("/")}
             >
               <FaHome />
             </Link>
 
-            {/* Profile icon with responsive sizing */}
-            <Link
-              to="/ViewUserDetails"
-              className="text-xl sm:text-2xl lg:text-3xl hover:text-teal-200 transition ease-in-out duration-500"
-            >
-              <FaUserAlt />
-            </Link>
+            {user.loggedIn ? (
+              <>
+                {/* Profile icon - Only show if logged in */}
+                <Link
+                  to="/ViewUserDetails"
+                  className={`text-xl sm:text-2xl lg:text-3xl transition ease-in-out duration-500 ${
+                    active === "/ViewUserDetails"
+                      ? "text-teal-200"
+                      : "hover:text-teal-200"
+                  }`}
+                  onClick={() => handleNavigate("/ViewUserDetails")}
+                >
+                  <FaUserAlt />
+                </Link>
 
-            {/* Login icon with responsive sizing */}
-            <Link
-              to="/login"
-              className="text-2xl sm:text-3xl lg:text-4xl hover:text-teal-200 transition ease-in-out duration-500"
-            >
-              <IoMdLogIn />
-            </Link>
+                {/* Logout icon - Only show if logged in */}
+                <button
+                  className={`text-2xl sm:text-3xl lg:text-4xl transition ease-in-out duration-500 ${
+                    active === "/login"
+                      ? "text-teal-200"
+                      : "hover:text-teal-200"
+                  }`}
+                  onClick={handleLogout}
+                >
+                  <IoMdLogOut />
+                </button>
+              </>
+            ) : (
+              // Login icon - Only show if not logged in
+              <Link
+                to="/login"
+                className={`text-2xl sm:text-3xl lg:text-4xl transition ease-in-out duration-500 ${
+                  active === "/login" ? "text-teal-200" : "hover:text-teal-200"
+                }`}
+                onClick={() => handleNavigate("/login")}
+              >
+                <IoMdLogIn />
+              </Link>
+            )}
           </div>
         </div>
       </div>

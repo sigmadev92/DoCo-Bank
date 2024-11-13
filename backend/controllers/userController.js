@@ -141,24 +141,32 @@ export async function loginController(req, res) {
     const token = jwt.sign(
       { userId: user._id, email: user.email }, // Payload can include user details
       process.env.JWT_SECRET, // Use the secret from your .env file
-      { expiresIn: "1h" } // Token expiration time
+      { expiresIn: "1h" }
     );
 
-    res.status(200).json({
-      status: true,
-      message: "Login successful",
-      userDetails: {
-        userId: user._id,
-        accountNumber: user.accountNumber,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        balance: user.balance,
-        token: token, // Include the token in the response
-      },
-    });
+    res.send({ status: true, userData: user, token: token });
   } catch (error) {
     console.error(`userController : login controller : error : ${error}`);
     res.send({ status: false, message: "Something went wrong during login." });
+  }
+}
+
+// get Current User Details @ redux
+export async function getCurrentUserDetails(req, res) {
+  console.log(`userController : getCurrentUserDetails`);
+  try {
+    const user = await user.findOne({ _id: req.params.userId });
+    if (user) {
+      return res.send({ status: true, data: user });
+    }
+  } catch (error) {
+    console.error(
+      `userController : get Current User Details controller : error : ${error}`
+    );
+    res.send({
+      status: false,
+      message: "Something went wrong while fetching details.",
+    });
   }
 }
 

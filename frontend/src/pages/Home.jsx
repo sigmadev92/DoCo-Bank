@@ -21,7 +21,7 @@ export default function Home() {
         className="w-[98%] h-[60vh] opacity-96 bg-cover mt-4 ml-4 mr-4 bg-center flex flex-col justify-center items-center text-center text-white"
         style={{ backgroundImage: `url(${HeroCover})` }}
       >
-        <h1 className="text-2xl sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold mb-4 bg-black bg-opacity-55 py-1 px-2 text-yellow-50 mx-4">
+        <h1 className="text-md sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold mb-4 bg-black bg-opacity-55 py-1 px-2 text-yellow-50 mx-4">
           Grow Your Wealth, Secure Your Health with DoCo Bank!
         </h1>
         <p className="text-sm sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-medium bg-black bg-opacity-55 py-1 px-2 mx-4">
