@@ -4,15 +4,22 @@ import {
   registerController,
   loginController,
   forgotPasswordController,
+  verifyOtp,
+  requestOtp,
 } from "../controllers/userController.js";
 // import authMiddleware from "../middleware/authMiddleware.js";
-import upload from "../library/Multer.js";
+import { upload } from "../library/Multer.js";
 
 const router = express.Router();
 
-console.log(`userRoute -`);
+console.log(`At user userRoute`);
+
 router.post("/register", upload.single("profilePhoto"), registerController);
+router.post("/request-otp", requestOtp);
+router.post("/verify-otp", verifyOtp);
+
 router.post("/login", loginController);
+
 router.post("/forgot-password", forgotPasswordController);
 
 // router.get("/profile", authMiddleware, (req, res) => {

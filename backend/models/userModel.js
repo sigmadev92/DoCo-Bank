@@ -44,6 +44,7 @@ const UserSchema = mongoose.Schema(
     accountNumber: {
       type: String,
       unique: true,
+      required: true,
     },
     digitalPin: {
       type: String,
@@ -56,7 +57,9 @@ const UserSchema = mongoose.Schema(
     },
     profilePhoto: {
       type: String,
-      required: true,
+    },
+    tempOtp: {
+      type: String,
     },
   },
   { timestamps: true }

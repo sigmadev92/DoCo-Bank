@@ -2,83 +2,120 @@
 import bcrypt from "bcrypt";
 import users from "../models/userModel.js";
 import jwt from "jsonwebtoken";
+import sendOtpEmail from "../services/registerEmailService.js";
+import {
+  generateOTP,
+  generateUniqueAccountNumber,
+} from "../services/helperFuntions.js";
 
-// Helper function to generate a unique 14-digit account number
-async function generateUniqueAccountNumber() {
-  let accountNumber;
-  let isUnique = false;
-
-  while (!isUnique) {
-    // Generate a random 14-digit number
-    accountNumber = Math.floor(
-      10000000000000 + Math.random() * 90000000000000
-    ).toString();
-
-    // Check if the generated account number already exists in the database
-    const existingUser = await users.findOne({ accountNumber });
-    if (!existingUser) {
-      isUnique = true; // Exit loop if account number is unique
-    }
-  }
-
-  return accountNumber;
-}
-
-// Helper function to generate a 6-digit OTP
-function generateOTP() {
-  return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit random number
-}
-
-// register controller -> First name, last name, Phone number, email, state, city, pinCode, Address, Password, Account number, DigitalPin, balance, Profile photo
-export async function registerController(req, res) {
-  console.log(`userController : register`);
+// Request OTP Controller
+export async function requestOtp(req, res) {
+  const { email } = req.body;
+  console.log(`backend : user Controller : request-Otp`);
   try {
-    // Check if the user already exists by email or phone number
-    const UserAlreadyExist = await users.findOne({
-      $or: [{ email: req.body.email }, { phoneNumber: req.body.phoneNumber }],
-    });
+    const otp = generateOTP();
+    const otpExpiration = Date.now() + 10 * 60 * 1000; // 10 minutes from now
 
-    if (UserAlreadyExist) {
-      console.log("Email or Phone Number already registered");
-      return res.status(400).json({
-        status: false,
-        message: "User already exists!",
-      });
+    await users.updateOne(
+      { email: email },
+      { tempOtp: otp, otpExpiration },
+      { upsert: true } // Creates a record if not found
+    );
+
+    await sendOtpEmail(email, otp);
+
+    res.status(200).json({ status: true, message: "OTP sent to email." });
+  } catch (error) {
+    console.error("Error in requestOtp:", error);
+    res.status(500).json({ status: false, message: "OTP request failed." });
+  }
+}
+
+// Verify OTP Controller
+export async function verifyOtp(req, res) {
+  console.log(`backend : user Controller : verify-Otp`);
+  const { email, otp } = req.body;
+  console.log(req.body);
+  try {
+    const user = await users.findOne({ email: email, tempOtp: otp });
+    console.log(`backend : user Controller : verify-Otp : user : ${user}`);
+    if (!user || user.otpExpiration < Date.now()) {
+      return res.send({ status: false, message: "Invalid or expired OTP." });
     }
 
-    // Hash password and digital PIN
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    const hashedDigitalPin = await bcrypt.hash(req.body.digitalPin, 10);
+    await users.updateOne(
+      { email },
+      { otp: null, otpExpiration: null } // Clear OTP after verification
+    );
 
-    // Generate a unique 14-digit account number
-    const accountNumber = await generateUniqueAccountNumber();
-
-    // Generate a 6-digit OTP and set expiration time (e.g., 10 minutes from now)
-    const otp = generateOTP();
-    const otpExpiration = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
-
-    // Create new user with hashed credentials
-    const newUser = new users({
-      ...req.body,
-      password: hashedPassword,
-      digitalPin: hashedDigitalPin,
-      accountNumber: accountNumber,
-      otp: otp,
-      otpExpiration: otpExpiration,
-    });
-
-    await newUser.save();
-    console.log("User registered successfully");
-    res.status(201).json({
-      status: true,
-      message: "User registered successfully",
-    });
+    res
+      .status(200)
+      .json({ status: true, message: "OTP verified successfully." });
   } catch (error) {
-    console.error(`userController : register controller : error : ${error}`);
-    res.status(500).json({
-      status: false,
-      message: "Something went wrong in the database.",
-    });
+    console.error("Error in verifyOtp:", error);
+    res
+      .status(500)
+      .json({ status: false, message: "OTP verification failed." });
+  }
+}
+
+// registerController -> First name, last name, Phone number, email, state, city, pinCode, Address, Password, Account number, DigitalPin, balance, Profile photo
+export async function registerController(req, res) {
+  console.log("Received registration request");
+
+  const {
+    firstName,
+    lastName,
+    email,
+    phoneNumber,
+    state,
+    city,
+    pinCode,
+    address,
+    password,
+    digitalPin,
+  } = req.body;
+  console.log("user controller testing: ", req.body);
+  try {
+    console.log("Finding user by email...");
+    const user = await users.findOne({ email });
+
+    if (!user) {
+      console.log("User not found, cannot register.");
+      return res.send({ status: false, message: "User not found." });
+    }
+
+    console.log("Hashing password and digital pin...");
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedDigitalPin = await bcrypt.hash(digitalPin, 10);
+
+    console.log("Generating account number...");
+    const accountNumber = await generateUniqueAccountNumber(); // Ensure this is awaited
+
+    console.log("Saving user...");
+    user.firstName = firstName;
+    user.lastName = lastName;
+    user.phoneNumber = phoneNumber;
+    user.state = state;
+    user.city = city;
+    user.pinCode = pinCode;
+    user.address = address;
+    user.password = hashedPassword;
+    user.digitalPin = hashedDigitalPin;
+    user.accountNumber = accountNumber; // Save account number
+    user.balance = 0; // Initial balance
+    user.tempOtp = null; // Clear OTP after registration
+    // Check if a profile photo is uploaded and save its path
+    if (req.file) {
+      user.profilePhoto = req.file.path;
+    }
+
+    await user.save();
+    console.log("User registered successfully.");
+    res.send({ status: true, message: "User registered successfully." });
+  } catch (error) {
+    console.error("Error during registration:", error);
+    res.send({ status: false, message: "Error during registration." });
   }
 }
 

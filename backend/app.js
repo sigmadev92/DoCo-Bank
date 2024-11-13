@@ -6,13 +6,19 @@ import userRouter from "./routes/userRoute.js";
 import accountRouter from "./routes/accountRoute.js";
 import pinRouter from "./routes/pinRoute.js";
 import errorHandler from "./middleware/errorHandler.js";
+import cors from "cors";
+import path from "path";  
+
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 const app = express();
 dotenv.config();
+app.use(cors({ origin: `http://localhost:3000` }));
 dbConnection();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/images", express.static(path.join(__dirname, "Images")));
 
 // Testing endpoint
 app.get("/", (req, res) => {
