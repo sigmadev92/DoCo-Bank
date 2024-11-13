@@ -12,18 +12,14 @@ import { upload } from "../library/Multer.js";
 
 const router = express.Router();
 
-console.log(`At user userRoute`);
+console.log(`At user Route`);
 
-router.post("/register", upload.single("profilePhoto"), registerController);
 router.post("/request-otp", requestOtp);
 router.post("/verify-otp", verifyOtp);
+router.post("/register", upload.single("profilePhoto"), registerController);
 
 router.post("/login", loginController);
 
 router.post("/forgot-password", forgotPasswordController);
-
-// router.get("/profile", authMiddleware, (req, res) => {
-//   res.json({ message: "User profile data (protected route)" });
-// });
 
 export default router;

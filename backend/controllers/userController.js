@@ -23,11 +23,10 @@ export async function requestOtp(req, res) {
     );
 
     await sendOtpEmail(email, otp);
-
-    res.status(200).json({ status: true, message: "OTP sent to email." });
+    res.send({ status: true, message: "OTP sent to email." });
   } catch (error) {
     console.error("Error in requestOtp:", error);
-    res.status(500).json({ status: false, message: "OTP request failed." });
+    res.send({ status: false, message: "OTP request failed." });
   }
 }
 
@@ -47,15 +46,10 @@ export async function verifyOtp(req, res) {
       { email },
       { otp: null, otpExpiration: null } // Clear OTP after verification
     );
-
-    res
-      .status(200)
-      .json({ status: true, message: "OTP verified successfully." });
+    res.send({ status: true, message: "OTP verified successfully." });
   } catch (error) {
     console.error("Error in verifyOtp:", error);
-    res
-      .status(500)
-      .json({ status: false, message: "OTP verification failed." });
+    res.send({ status: false, message: "OTP verification failed." });
   }
 }
 
@@ -122,16 +116,16 @@ export async function registerController(req, res) {
 // login controller -> accountNumber, phoneNumber or email, password
 export async function loginController(req, res) {
   console.log(`userController : login`);
-  const { accountNumber, phoneNumber, email, password } = req.body;
+  const { email, password } = req.body;
 
   try {
     // Find the user by account number, phone number, or email
     const user = await users.findOne({
-      $or: [{ accountNumber }, { phoneNumber }, { email }],
+      email,
     });
 
     if (!user) {
-      return res.status(404).json({
+      return res.send({
         status: false,
         message: "User not found. Please register first.",
       });
@@ -140,10 +134,7 @@ export async function loginController(req, res) {
     // Compare entered password with the hashed password in the database
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({
-        status: false,
-        message: "Invalid credentials",
-      });
+      return res.send({ status: false, message: "Invalid credentials" });
     }
 
     // Generate JWT token
@@ -167,10 +158,7 @@ export async function loginController(req, res) {
     });
   } catch (error) {
     console.error(`userController : login controller : error : ${error}`);
-    res.status(500).json({
-      status: false,
-      message: "Something went wrong during login.",
-    });
+    res.send({ status: false, message: "Something went wrong during login." });
   }
 }
 

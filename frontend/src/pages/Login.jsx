@@ -1,7 +1,46 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { LoginUser } from "../api/LoginFunction";
+import { toast } from "react-toastify";
 
 export default function Login() {
+  const Navigate = useNavigate();
+
+  const [loginFormData, setLoginFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  // const { email, password } = loginFormData;
+  function handleLoginChange(event) {
+    setLoginFormData((prev) => {
+      return { ...prev, [event.target.name]: event.target.value };
+    });
+  }
+
+  useEffect(() => {
+    console.log("Updated loginFormData:", loginFormData);
+  }, [loginFormData]);
+
+  async function handleLoginSubmit(event) {
+    event.preventDefault();
+    console.log("handleLoginSubmit");
+    try {
+      const response = await LoginUser(loginFormData);
+      if (response.status) {
+        toast.success("Login Successfully!");
+
+        localStorage.setItem("Token", response.Token);
+        console.log(localStorage);
+        Navigate("/");
+      } else {
+        toast.error("Something went wrong!", response.message);
+      }
+    } catch (error) {
+      toast.error("connectivity error");
+      console.log(error);
+    }
+  }
   return (
     <div className="h-[79.91vh] flex items-center justify-center bg-gray-100 overflow-y-auto">
       <form className="bg-white p-4 sm:p-6 md:p-8 rounded shadow-md w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl ">
@@ -17,6 +56,9 @@ export default function Login() {
         {/* Email Field */}
         <input
           type="email"
+          name="email"
+          value={loginFormData.email}
+          onChange={handleLoginChange}
           placeholder="Email"
           className="w-full p-2 mb-4 border rounded text-sm sm:text-base"
           required
@@ -25,6 +67,9 @@ export default function Login() {
         {/* Password Field */}
         <input
           type="password"
+          name="password"
+          value={loginFormData.password}
+          onChange={handleLoginChange}
           placeholder="Password"
           className="w-full p-2 mb-4 border rounded text-sm sm:text-base"
           required
@@ -34,6 +79,7 @@ export default function Login() {
         <button
           type="submit"
           className="bg-navy text-white w-full p-2 rounded text-sm sm:text-base"
+          onClick={handleLoginSubmit}
         >
           Login
         </button>
