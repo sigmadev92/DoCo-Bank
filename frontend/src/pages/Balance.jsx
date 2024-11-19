@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-// This is a placeholder for balance data. Replace with API call or actual data fetching logic
-const mockBalance = 1500.75;
+import { useSelector } from "react-redux";
 
 export default function Balance() {
+  // Access global state from Redux
+  const { userData, loggedIn } = useSelector((state) => state.user);
+
+  // State to manage balance display
   const [balance, setBalance] = useState(null);
 
+  // Update balance when userData changes
   useEffect(() => {
-    // Simulate data fetching for balance
-    setBalance(mockBalance);
-  }, []);
+    if (userData && loggedIn) {
+      setBalance(userData.balance);
+    }
+  }, [userData, loggedIn]);
 
   return (
     <div className="h-[79.91vh] flex items-center justify-center bg-gray-100 overflow-y-auto">

@@ -7,6 +7,8 @@ import {
   verifyOtp,
   requestOtp,
   getCurrentUserDetails,
+  verifyDigitalPin,
+  editUserDetails
 } from "../controllers/userController.js";
 // import authMiddleware from "../middleware/authMiddleware.js";
 import { upload } from "../library/Multer.js";
@@ -20,7 +22,12 @@ router.post("/verify-otp", verifyOtp);
 router.post("/register", upload.single("profilePhoto"), registerController);
 
 router.post("/login", loginController);
+// @ redux route
 router.get("/get-current-user-details/:userId", getCurrentUserDetails);
+
+router.post("/verifyDigitalPin", verifyDigitalPin);
+
+router.put("/editUserDetails", editUserDetails);
 
 router.post("/forgot-password", forgotPasswordController);
 

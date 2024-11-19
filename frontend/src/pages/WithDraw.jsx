@@ -1,38 +1,55 @@
-import React, { useState, useEffect } from "react";
+import axios from "axios";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-
-// This is a placeholder for balance data. Replace with API call or actual data fetching logic
-const mockBalance = 1500.75;
+import { accountUrl } from "../api/URL";
+import { WithDraw_BALANCE } from "../redux/slices/userSlice";
+import { toast } from "react-toastify";
 
 export default function WithDraw() {
-  const [balance, setBalance] = useState(null);
+  const { userData } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    // Simulate data fetching for balance
-    setBalance(mockBalance);
-  }, []);
+  const handleWithdraw = async (event) => {
+    event.preventDefault();
 
-  const handleWithdraw = (e) => {
-    e.preventDefault();
+    try {
+      // Validate withdrawal amount
+      const withdrawAmount = parseFloat(amount);
+      if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
+        setMessage("Please enter a valid withdrawal amount.");
+        return;
+      }
 
-    // Check if amount is valid
-    const withdrawAmount = parseFloat(amount);
-    if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
-      setMessage("Please enter a valid amount.");
-      return;
+      if (withdrawAmount > userData.balance) {
+        setMessage("Insufficient balance.");
+        return;
+      }
+
+      // Make API request to process withdrawal
+      const response = await axios.post(`${accountUrl}/withdraw`, {
+        userId: userData._id,
+        amount: withdrawAmount, // Match the field expected by the backend
+      });
+
+      if (response.status === 200) {
+        // Update Redux state and clear inputs
+        dispatch(
+          WithDraw_BALANCE({
+            WithDraw_New_amount: userData.balance - withdrawAmount,
+          })
+        );
+        setAmount("");
+        toast.success(`Successfully withdrawn ₹${withdrawAmount.toFixed(2)}.`);
+        setMessage(`Successfully withdrawn ₹${withdrawAmount.toFixed(2)}.`);
+      }
+    } catch (error) {
+      toast.error("Something went wrong during withdrawal!");
+      console.error("Withdraw Error:", error);
     }
-
-    if (withdrawAmount > balance) {
-      setMessage("Insufficient balance.");
-      return;
-    }
-
-    // Simulate successful withdrawal
-    setBalance(balance - withdrawAmount);
-    setMessage(`Successfully withdrawn ₹${withdrawAmount.toFixed(2)}.`);
-    setAmount(""); // Reset the amount field
   };
 
   return (

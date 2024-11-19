@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function DigitalPin() {
   return (
@@ -55,6 +56,16 @@ export default function DigitalPin() {
           <button className="bg-navy text-white w-full p-2 rounded text-sm sm:text-base">
             Reset Digital Pin
           </button>
+
+          {/* Back Link */}
+          <div className="text-center mt-4 space-y-2">
+            <Link
+              to="/"
+              className="text-sm text-navy-blue hover:underline block"
+            >
+              Back to Home
+            </Link>
+          </div>
         </div>
       </div>
     </div>

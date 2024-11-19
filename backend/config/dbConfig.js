@@ -11,7 +11,7 @@ const dbConnection = async () => {
     console.log("MongoDB Connected!!");
   } catch (err) {
     console.log(`Error in connecting to the database: ${err}`);
-    console.error("Error in DB Connection!");  // Changed console.log to console.error for better clarity
+    console.log("Error in DB Connection!");  // Changed console.log to console.error for better clarity
   }
 };
 

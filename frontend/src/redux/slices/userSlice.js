@@ -3,7 +3,6 @@ import axios from "axios";
 import { userUrl } from "../../api/URL";
 
 // inital state
-
 export const fetchUserDetails = createAsyncThunk(
   "fetchUserDetails",
   async () => {
@@ -14,7 +13,7 @@ export const fetchUserDetails = createAsyncThunk(
       };
     // fetching token
     const response = await axios.get(
-      `${userUrl}/get-current-user-details/${localStorage.getItem("token")}`
+      `${userUrl}/get-current-user-details/${localStorage.getItem("userId")}`
     );
     console.log(`user slice : user details:`, response);
     console.log(response.data);
@@ -37,6 +36,15 @@ const userSlice = createSlice({
       state.loggedIn = false;
       state.userData = null;
     },
+    deposit_BALANCE: (state, action) => {
+      state.userData.balance = action.payload.New_amount;
+    },
+    WithDraw_BALANCE: (state, action) => {
+      state.userData.balance = action.payload.WithDraw_New_amount;
+    },
+    Transfer_BALANCE: (state, action) => {
+      state.userData.balance = action.payload.Transfer_New_amount;
+    },
   },
   extraReducers: (builders) => {
     builders.addCase(fetchUserDetails.fulfilled, (state, action) => {
@@ -51,6 +59,12 @@ const userSlice = createSlice({
   },
 });
 
-export const { setAuth, deleteAuth } = userSlice.actions;
+export const {
+  setAuth,
+  deleteAuth,
+  deposit_BALANCE,
+  WithDraw_BALANCE,
+  Transfer_BALANCE,
+} = userSlice.actions;
 
 export default userSlice.reducer;

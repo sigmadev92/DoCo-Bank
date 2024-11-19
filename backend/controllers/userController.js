@@ -25,7 +25,7 @@ export async function requestOtp(req, res) {
     await sendOtpEmail(email, otp);
     res.send({ status: true, message: "OTP sent to email." });
   } catch (error) {
-    console.error("Error in requestOtp:", error);
+    console.log("Error in requestOtp:", error);
     res.send({ status: false, message: "OTP request failed." });
   }
 }
@@ -48,7 +48,7 @@ export async function verifyOtp(req, res) {
     );
     res.send({ status: true, message: "OTP verified successfully." });
   } catch (error) {
-    console.error("Error in verifyOtp:", error);
+    console.log("Error in verifyOtp:", error);
     res.send({ status: false, message: "OTP verification failed." });
   }
 }
@@ -69,7 +69,7 @@ export async function registerController(req, res) {
     password,
     digitalPin,
   } = req.body;
-  console.log("user controller testing: ", req.body);
+  // console.log("user controller testing: ", req.body);
   try {
     console.log("Finding user by email...");
     const user = await users.findOne({ email });
@@ -108,7 +108,7 @@ export async function registerController(req, res) {
     console.log("User registered successfully.");
     res.send({ status: true, message: "User registered successfully." });
   } catch (error) {
-    console.error("Error during registration:", error);
+    console.log("Error during registration:", error);
     res.send({ status: false, message: "Error during registration." });
   }
 }
@@ -146,7 +146,7 @@ export async function loginController(req, res) {
 
     res.send({ status: true, userData: user, token: token });
   } catch (error) {
-    console.error(`userController : login controller : error : ${error}`);
+    console.log(`userController : login controller : error : ${error}`);
     res.send({ status: false, message: "Something went wrong during login." });
   }
 }
@@ -154,18 +154,110 @@ export async function loginController(req, res) {
 // get Current User Details @ redux
 export async function getCurrentUserDetails(req, res) {
   console.log(`userController : getCurrentUserDetails`);
+
   try {
-    const user = await user.findOne({ _id: req.params.userId });
+    const user = await users.findOne({ _id: req.params.userId });
     if (user) {
       return res.send({ status: true, data: user });
     }
   } catch (error) {
-    console.error(
+    console.log(
       `userController : get Current User Details controller : error : ${error}`
     );
     res.send({
       status: false,
       message: "Something went wrong while fetching details.",
+    });
+  }
+}
+
+// Endpoint to verify the digital pin
+export async function verifyDigitalPin(req, res) {
+  console.log("verifyDigitalPin called");
+  const { userId, pin } = req.body;
+
+  try {
+    // Find the user by ID
+    const user = await users.findById(userId);
+    if (!user) {
+      return res.send({ status: false, message: "User not found" });
+    }
+
+    // Compare the entered pin with the stored hashed digitalPin
+    const isMatch = await bcrypt.compare(pin, user.digitalPin);
+    if (isMatch) {
+      return res.send({ status: true, message: "PIN matched successfully!" });
+    } else {
+      return res.send({ status: false, message: "Incorrect pin" });
+    }
+  } catch (error) {
+    console.log("Error verifying digital pin:", error);
+    return res.send({ status: false, message: "Server Error" });
+  }
+}
+
+// edit user details
+export async function editUserDetails(req, res) {
+  console.log(`userController : editUserDetails called`);
+  const {
+    userId,
+    firstName,
+    lastName,
+    phoneNumber,
+    state,
+    city,
+    pinCode,
+    address,
+  } = req.body;
+
+  try {
+    // Validate inputs (optional but recommended)
+    if (
+      !userId ||
+      !firstName ||
+      !lastName ||
+      !phoneNumber ||
+      !state ||
+      !city ||
+      !pinCode ||
+      !address
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "All fields are required",
+      });
+    }
+
+    // Find the user and update details
+    const user = await users.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: false,
+        message: "User not found",
+      });
+    }
+
+    // Update the user's details
+    user.firstName = firstName;
+    user.lastName = lastName;
+    user.phoneNumber = phoneNumber;
+    user.state = state;
+    user.city = city;
+    user.pinCode = pinCode;
+    user.address = address;
+
+    await user.save();
+
+    console.log(`User details updated successfully for userId: ${userId}`);
+    res.status(200).json({
+      status: true,
+      message: "User details updated successfully",
+    });
+  } catch (error) {
+    console.log(`userController : editUserDetails : error : ${error}`);
+    res.status(500).json({
+      status: false,
+      message: "Something went wrong while updating details",
     });
   }
 }
@@ -201,7 +293,7 @@ export async function forgotPasswordController(req, res) {
       message: "Password reset successful",
     });
   } catch (error) {
-    console.error(
+    console.log(
       `userController : forgot password controller : error : ${error}`
     );
     res.status(500).json({

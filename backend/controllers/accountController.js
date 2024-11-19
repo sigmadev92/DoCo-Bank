@@ -1,3 +1,4 @@
+// backend\controllers\accountController.js
 import User from "../models/userModel.js";
 import Transaction from "../models/transactionModel.js";
 
@@ -5,6 +6,7 @@ import Transaction from "../models/transactionModel.js";
 export const deposit = async (req, res) => {
   console.log(`account Controller : deposit`);
   const { userId, amount } = req.body;
+  console.log(userId);
   try {
     const user = await User.findById(userId);
     if (!user) {
@@ -24,11 +26,13 @@ export const deposit = async (req, res) => {
     await user.save();
     await transaction.save();
 
-    res
-      .status(200)
-      .json({ message: "Deposit successful", balance: user.balance });
+    res.send({
+      status: true,
+      message: "Deposit successful",
+      balance: user.balance,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error during deposit", error });
+    res.send({ status: false, message: `Error during deposit", ${error}` });
   }
 };
 
@@ -66,13 +70,18 @@ export const withdraw = async (req, res) => {
 // Transfer money
 export const transfer = async (req, res) => {
   console.log(`account Controller : transfer`);
-  const { fromUserId, toUserId, amount } = req.body;
+  const { fromUserId, recipientEmail, amount } = req.body;
+
   try {
     const fromUser = await User.findById(fromUserId);
-    const toUser = await User.findById(toUserId);
+    const toUser = await User.findOne({ email: recipientEmail }); 
 
-    if (!fromUser || !toUser) {
-      return res.status(404).json({ message: "User not found" });
+    if (!fromUser) {
+      return res.status(404).json({ message: "Sender not found" });
+    }
+
+    if (!toUser) {
+      return res.status(404).json({ message: "Recipient not found" });
     }
 
     if (fromUser.balance < amount) {
@@ -86,7 +95,7 @@ export const transfer = async (req, res) => {
       userId: fromUser._id,
       type: "transfer",
       amount,
-      description: `Transfer to ${toUser.accountNumber}`,
+      description: `Transfer to ${toUser.email}`,
       balanceAfterTransaction: fromUser.balance,
     });
 
@@ -94,7 +103,7 @@ export const transfer = async (req, res) => {
       userId: toUser._id,
       type: "transfer",
       amount,
-      description: `Transfer from ${fromUser.accountNumber}`,
+      description: `Transfer from ${fromUser.email}`,
       balanceAfterTransaction: toUser.balance,
     });
 
@@ -105,6 +114,7 @@ export const transfer = async (req, res) => {
 
     res.status(200).json({ message: "Transfer successful" });
   } catch (error) {
+    console.error("Error during transfer:", error);
     res.status(500).json({ message: "Error during transfer", error });
   }
 };
@@ -119,23 +129,32 @@ export const viewBalance = async (req, res) => {
       const response = res.status(404).json({ message: "User not found" });
       return response;
     }
-    res.status(200).json({ balance: user.balance });
+    res.send({ status: true, balance: user.balance });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching balance", error });
+    res.send({ status: false, message: "Error fetching balance", error });
   }
 };
 
-// Mini statement (last 10 transactions)
+// transaction history
 export const miniStatement = async (req, res) => {
   console.log(`account Controller : mini statements`);
   const { userId } = req.params;
   try {
-    const transactions = await Transaction.find({ userId })
-      .sort({ createdAt: -1 })
-      .limit(10);
+    const transactions = await Transaction.find({ userId }).sort({ date: -1 });
 
-    res.status(200).json(transactions);
+    if (!transactions || transactions.length === 0) {
+      return res.send({
+        status: true,
+        message: "No transactions found for user",
+      });
+    }
+    res.send({ status: true, data: transactions });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching mini statement", error });
+    console.error("Error fetching mini statement:", error);
+    res.send({
+      status: false,
+      message: "Error fetching mini statement",
+      error,
+    });
   }
 };

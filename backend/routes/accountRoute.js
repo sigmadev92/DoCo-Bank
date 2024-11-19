@@ -1,3 +1,4 @@
+// backend\routes\accountRoute.js
 import express from "express";
 import {
   deposit,
@@ -6,14 +7,13 @@ import {
   viewBalance,
   miniStatement,
 } from "../controllers/accountController.js";
-import { validatePinMiddleware } from "../middleware/pinMiddleware.js";
 
 const router = express.Router();
 console.log(`At Account Route`);
-router.post("/deposit", validatePinMiddleware, deposit);
-router.post("/withdraw", validatePinMiddleware, withdraw);
-router.post("/transfer", validatePinMiddleware, transfer);
-router.get("/balance/:userId", validatePinMiddleware, viewBalance);
-router.get("/mini-statement/:userId", validatePinMiddleware, miniStatement);
+router.post("/deposit", deposit);
+router.post("/withdraw", withdraw);
+router.post("/transfer", transfer);
+router.get("/balance/:userId", viewBalance);
+router.get("/mini-statement/:userId", miniStatement);
 
 export default router;

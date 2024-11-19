@@ -1,9 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 export default function ViewUserDetails() {
+  // Access user data and dispatch function from Redux
+  const user = useSelector((state) => state.user);
+
   return (
     <div className="h-[79.91vh] flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-6 rounded shadow-md w-full max-w-lg">
+      <div className="bg-white p-6 rounded shadow-md w-full max-w-lg max-h-[70vh]  overflow-y-auto">
         {/* Header */}
         <h1 className="bg-navy text-white w-full p-2 mb-2 uppercase text-center">
           User Details
@@ -12,41 +16,40 @@ export default function ViewUserDetails() {
         {/* Profile Photo */}
         <div className="flex justify-center mt-6">
           <img
-            src="#"
-            alt="img"
-            // src={user.profilePhoto}
-            // alt={`${user.firstName} ${user.lastName}`}
+            src={user.userData.profilePhoto}
+            alt={`${user.userData.firstName} ${user.userData.lastName}`}
             className="w-24 h-24 rounded-full border"
           />
         </div>
 
         {/* User Information */}
-        <div className="space-y-4">
-          <div className="flex justify-between">
-            <span className="font-bold text-gray-700">First Name:</span>
-            {/* <span>{user.firstName}</span> */}
-          </div>
-          <div className="flex justify-between">
-            <span className="font-bold text-gray-700">Last Name:</span>
-            {/* <span>{user.lastName}</span> */}
-          </div>
-          <div className="flex justify-between">
-            <span className="font-bold text-gray-700">Email:</span>
-            {/* <span>{user.email}</span> */}
-          </div>
-          <div className="flex justify-between">
-            <span className="font-bold text-gray-700">Phone Number:</span>
-            {/* <span>{user.phoneNumber}</span> */}
-          </div>
-          <div className="flex justify-between">
-            <span className="font-bold text-gray-700">Address:</span>
-            <span>
-              {/* {user.address}, {user.city}, {user.state} - {user.pinCode} */}
-            </span>
-          </div>
-          <div className="flex justify-between">
+        <div className="space-y-4 cursor-not-allowed">
+          <div className="flex justify-start">
             <span className="font-bold text-gray-700">Account Number:</span>
-            {/* <span>{user.accountNumber}</span> */}
+            <span className="ml-2">{user.userData.accountNumber}</span>
+          </div>
+          <div className="flex justify-start">
+            <span className="font-bold text-gray-700">First Name:</span>
+            <span className="ml-2">{user.userData.firstName}</span>
+          </div>
+          <div className="flex justify-start">
+            <span className="font-bold text-gray-700">Last Name:</span>
+            <span className="ml-2">{user.userData.lastName}</span>
+          </div>
+          <div className="flex justify-start">
+            <span className="font-bold text-gray-700">Email:</span>
+            <span className="ml-2">{user.userData.email}</span>
+          </div>
+          <div className="flex justify-start">
+            <span className="font-bold text-gray-700">Phone Number:</span>
+            <span className="ml-2">{user.userData.phoneNumber}</span>
+          </div>
+          <div className="flex justify-start">
+            <span className="font-bold text-gray-700">Address:</span>
+            <span className="ml-2">
+              {user.userData.address}, {user.userData.city},{" "}
+              {user.userData.state} - {user.userData.pinCode}
+            </span>
           </div>
 
           <div className="text-center mt-4 space-y-2">

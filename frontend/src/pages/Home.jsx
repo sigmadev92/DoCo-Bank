@@ -1,5 +1,5 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaWallet,
   FaMoneyBillWave,
@@ -11,11 +11,53 @@ import {
 import HeroCover from "../images/bg3.jpeg";
 import security1 from "../images/security1.png";
 import security2 from "../images/security2.png";
+import { useSelector } from "react-redux";
+import EnterDigitalPin from "../components/EnterDigitalPin";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { userUrl } from "../api/URL";
 
 export default function Home() {
+  const navigate = useNavigate();
+  const { userData, loggedIn } = useSelector((state) => state.user);
+  const [showPinPrompt, setShowPinPrompt] = useState(false);
+  const [nextPath, setNextPath] = useState("");
+
+  // Function to handle service click
+  const handleServiceClick = (path) => {
+    if (loggedIn) {
+      setNextPath(path);
+      setShowPinPrompt(true);
+    } else {
+      toast.error("Log in to access our services!");
+      return navigate("/login"); // navigation not working
+    }
+  };
+
+  // Function to handle pin submission
+  const handlePinSubmit = async (enteredPin) => {
+    try {
+      // Make an API call to verify the pin
+      const response = await axios.post(`${userUrl}/verifyDigitalPin`, {
+        userId: userData._id,
+        pin: enteredPin,
+      });
+
+      if (response.data.status) {
+        navigate(nextPath);
+      } else {
+        toast.error("Incorrect digital pin");
+      }
+    } catch (error) {
+      console.error("Error verifying digital pin:", error);
+      toast.error("An error occurred while verifying the digital pin");
+    }
+
+    setShowPinPrompt(false);
+  };
+
   return (
     <div className="bg-white flex flex-col items-center">
-      {/* Hero Section */}
       {/* Hero Section */}
       <div
         className="w-[98%] h-[60vh] opacity-96 bg-cover mt-4 ml-4 mr-4 bg-center flex flex-col justify-center items-center text-center text-white"
@@ -36,20 +78,19 @@ export default function Home() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Service: View Balance */}
-          <Link
-            to="/balance"
-            className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition transform hover:scale-105 text-center group"
+          <div
+            onClick={() => handleServiceClick("/balance")}
+            className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition transform hover:scale-105 text-center group cursor-pointer"
           >
-            <FaWallet className="text-4xl  text-navy mb-4 group-hover:text-teal-500 transition" />
+            <FaWallet className="text-4xl text-navy mb-4 group-hover:text-teal-500 transition" />
             <h3 className="text-xl font-semibold text-navy">View Balance</h3>
             <p className="text-gray-600 mt-2">
               Check your current balance in seconds!
             </p>
-          </Link>
-
+          </div>
           {/* Service: Deposit */}
           <Link
-            to="/deposit"
+            onClick={() => handleServiceClick("/deposit")}
             className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition transform hover:scale-105 text-center group"
           >
             <FaRegCreditCard className="text-4xl text-navy mb-4 group-hover:text-teal-500 transition" />
@@ -61,7 +102,7 @@ export default function Home() {
 
           {/* Service: Withdraw Money */}
           <Link
-            to="/withdraw"
+            onClick={() => handleServiceClick("/withdraw")}
             className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition transform hover:scale-105 text-center group"
           >
             <FaMoneyBillWave className="text-4xl text-navy mb-4 group-hover:text-teal-500 transition" />
@@ -73,7 +114,7 @@ export default function Home() {
 
           {/* Service: Transfer Funds */}
           <Link
-            to="/transfer"
+            onClick={() => handleServiceClick("/transfer")}
             className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition transform hover:scale-105 text-center group"
           >
             <FaExchangeAlt className="text-4xl text-navy mb-4 group-hover:text-teal-500 transition" />
@@ -83,7 +124,7 @@ export default function Home() {
 
           {/* Service: Transaction History */}
           <Link
-            to="/transactionHistory"
+            onClick={() => handleServiceClick("/transactionHistory")}
             className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition transform hover:scale-105 text-center group"
           >
             <FaHistory className="text-4xl text-navy mb-4 group-hover:text-teal-500 transition" />
@@ -97,7 +138,7 @@ export default function Home() {
 
           {/* Service: Reset Digital Pin */}
           <Link
-            to="/digitalPin"
+            onClick={() => handleServiceClick("/digitalPin")}
             className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition transform hover:scale-105 text-center group"
           >
             <FaKey className="text-4xl text-navy mb-4 group-hover:text-teal-500 transition" />
@@ -108,6 +149,14 @@ export default function Home() {
               Securely reset your digital pin for enhanced security.
             </p>
           </Link>
+
+          {/* Show EnterDigitalPin component if needed */}
+          {showPinPrompt && (
+            <EnterDigitalPin
+              onSubmit={handlePinSubmit}
+              onClose={() => setShowPinPrompt(false)}
+            />
+          )}
         </div>
       </div>
 

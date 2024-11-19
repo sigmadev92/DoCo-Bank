@@ -28,7 +28,7 @@ app.get("/", (req, res) => {
 // Route setup
 app.use("/user", userRouter);
 app.use("/account", accountRouter);
-app.use("/pin", pinRouter);
+// app.use("/pin", pinRouter);
 
 // Error handling middleware
 app.use(errorHandler);

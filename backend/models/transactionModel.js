@@ -1,3 +1,4 @@
+// backend\models\transactionModel.js
 import mongoose from "mongoose";
 
 // Transaction model schema to log all transactions
@@ -23,6 +24,7 @@ const TransactionSchema = mongoose.Schema(
     },
     description: {
       type: String,
+      default: "NA",
     },
     balanceAfterTransaction: {
       type: Number,
