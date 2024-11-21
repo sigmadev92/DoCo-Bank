@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-
+import { RiseLoader } from "react-spinners";
 export default function Balance() {
   // Access global state from Redux
   const { userData, loggedIn } = useSelector((state) => state.user);
@@ -30,7 +30,7 @@ export default function Balance() {
 
         {/* Balance Display */}
         <div className="text-center text-3xl font-semibold text-navy-blue mb-6">
-          {balance !== null ? `₹${balance.toFixed(2)}` : "Loading..."}
+          {balance !== null ? `₹${balance.toFixed(2)}` : <RiseLoader color="#001f3f" />}
         </div>
 
         {/* Link to return to previous page */}

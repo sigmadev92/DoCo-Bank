@@ -7,7 +7,9 @@ import {
   FaHistory,
   FaRegCreditCard,
   FaKey,
+  FaLock,
 } from "react-icons/fa";
+// import { FaLock } from "react-icons/fa";
 import HeroCover from "../images/bg3.jpeg";
 import security1 from "../images/security1.png";
 import security2 from "../images/security2.png";
@@ -135,11 +137,19 @@ export default function Home() {
               Review all your past transactions.
             </p>
           </Link>
+        </div>
+      </div>
 
-          {/* Service: Reset Digital Pin */}
-          <Link
-            onClick={() => handleServiceClick("/digitalPin")}
-            className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition transform hover:scale-105 text-center group"
+      {/*  User credentials Section */}
+      <div className="w-[90%] mt-12 px-6 py-6 bg-gray-100 rounded-lg shadow-md border border-2px">
+        <h2 className="text-3xl font-bold text-navy mb-8 text-center">
+          User Credentials
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+          {/* Reset Digital Pin */}
+          <div
+            onClick={() => navigate("/digitalPin")}
+            className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition transform hover:scale-105 text-center group cursor-pointer"
           >
             <FaKey className="text-4xl text-navy mb-4 group-hover:text-teal-500 transition" />
             <h3 className="text-xl font-semibold text-navy">
@@ -148,15 +158,18 @@ export default function Home() {
             <p className="text-gray-600 mt-2">
               Securely reset your digital pin for enhanced security.
             </p>
-          </Link>
-
-          {/* Show EnterDigitalPin component if needed */}
-          {showPinPrompt && (
-            <EnterDigitalPin
-              onSubmit={handlePinSubmit}
-              onClose={() => setShowPinPrompt(false)}
-            />
-          )}
+          </div>
+          {/* Reset Password */}
+          <div
+            onClick={() => navigate("/passwordReset")}
+            className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition transform hover:scale-105 text-center group cursor-pointer"
+          >
+            <FaLock className="text-4xl text-navy mb-4 group-hover:text-teal-500 transition" />
+            <h3 className="text-xl font-semibold text-navy">Reset Password</h3>
+            <p className="text-gray-600 mt-2">
+              Securely reset your password for enhanced security.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -200,6 +213,17 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Pop-Up Component */}
+      {showPinPrompt && (
+        <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-black bg-opacity-60 z-50">
+          <EnterDigitalPin
+            onSubmit={handlePinSubmit}
+            onClose={() => setShowPinPrompt(false)}
+          />
+        </div>
+      )}
+      
     </div>
   );
 }

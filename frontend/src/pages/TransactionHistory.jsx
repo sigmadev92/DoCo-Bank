@@ -1,48 +1,59 @@
-// src\pages\TransactionHistory.jsx
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { accountUrl } from "../api/URL";
+import { RiseLoader } from "react-spinners";
 
 export default function TransactionHistory() {
-  // Access user data and dispatch function from Redux
+  // Access user data from Redux
   const user = useSelector((state) => state.user);
 
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userLoading, setUserLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      setLoading(true);
-      try {
-        const userId = user?.userData?._id;
-
-        if (!userId) {
-          setError("User ID unavailable.");
-          setLoading(false);
-          return;
-        }
-
-        const response = await axios.get(
-          `${accountUrl}/mini-statement/${userId}`
-        );
-        if (response.data.status) {
-          setTransactions(response.data.data);
-        } else {
-          setError("Unable to fetch transactions. Try again later.");
-        }
-      } catch (err) {
-        console.error("Error fetching transactions:", err);
-        setError("Failed to fetch transactions. Please try again later.");
-      } finally {
-        setLoading(false);
+    // Wait for user data to be available before proceeding
+    const waitForUserData = async () => {
+      // Check if user data is loaded
+      if (user?.userData) {
+        setUserLoading(false);
+        fetchTransactions(user.userData._id);
       }
     };
 
-    fetchTransactions();
+    waitForUserData();
   }, [user]);
+
+  const fetchTransactions = async (userId) => {
+    setLoading(true);
+    try {
+      console.log("Fetching transactions for user: ", userId);
+      const response = await axios.get(
+        `${accountUrl}/mini-statement/${userId}`
+      );
+      if (response.data.status) {
+        setTransactions(response.data.data);
+      } else {
+        setError("Unable to fetch transactions. Try again later.");
+      }
+    } catch (err) {
+      console.error("Error fetching transactions:", err);
+      setError("Failed to fetch transactions. Please try again later.");
+    }
+    setLoading(false);
+  };
+
+  if (userLoading) {
+    // Display a spinner while waiting for user data
+    return (
+      <div className="h-[79.91vh] flex items-center justify-center bg-gray-100">
+        <RiseLoader color="#001f3f" />
+      </div>
+    );
+  }
 
   return (
     <div className="h-[79.91vh] flex items-center justify-center bg-gray-100 overflow-y-auto">
@@ -59,7 +70,10 @@ export default function TransactionHistory() {
         {/* Scrollable Transaction Table */}
         <div className="max-h-72 overflow-y-auto border">
           {loading ? (
-            <div className="text-center text-gray-600 py-4">Loading...</div>
+            <div className="text-center text-gray-600 py-4">
+              {" "}
+              <RiseLoader color="black" />
+            </div>
           ) : error ? (
             <div className="text-center text-red-600 py-4">{error}</div>
           ) : (
@@ -84,7 +98,7 @@ export default function TransactionHistory() {
                 </tr>
               </thead>
               <tbody>
-                {transactions.length > 0 ? (
+                {transactions?.length > 0 ? (
                   transactions.map((transaction) => (
                     <tr key={transaction._id} className="border-t">
                       <td className="px-4 py-2 text-navy-blue text-base lg:text-lg sm:text-xs md:text-md">

@@ -15,9 +15,11 @@ import TransactionHistory from "./pages/TransactionHistory";
 import Transfer from "./pages/Transfer";
 import WithDraw from "./pages/WithDraw";
 import Deposit from "./pages/Deposit";
+import PasswordReset from "./pages/PasswordReset";
 import { useDispatch } from "react-redux";
 import { fetchUserDetails } from "./redux/slices/userSlice";
 import { useEffect } from "react";
+
 
 function App() {
   const dispatch = useDispatch();
@@ -61,6 +63,7 @@ function App() {
               <Route path="/viewUserDetails" element={<ViewUserDetails />} />
               <Route path="/withDraw" element={<WithDraw />} />
               <Route path="/deposit" element={<Deposit />} />
+              <Route path="/passwordReset" element={<PasswordReset />} />
             </Routes>
           </div>
 

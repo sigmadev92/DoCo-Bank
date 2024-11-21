@@ -1,11 +1,13 @@
-// import users from "../models/userModel.js";
+// backend/controllers/userController.js
 import bcrypt from "bcrypt";
 import users from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import sendOtpEmail from "../services/registerEmailService.js";
+import sendPasswordEmail from "../services/ForgotPasswordService.js";
 import {
   generateOTP,
   generateUniqueAccountNumber,
+  GenerateNewPassword,
 } from "../services/helperFuntions.js";
 
 // Request OTP Controller
@@ -14,12 +16,12 @@ export async function requestOtp(req, res) {
   console.log(`backend : user Controller : request-Otp`);
   try {
     const otp = generateOTP();
-    const otpExpiration = Date.now() + 10 * 60 * 1000; // 10 minutes from now
+    const otpExpiration = Date.now() + 10 * 60 * 1000;
 
     await users.updateOne(
       { email: email },
       { tempOtp: otp, otpExpiration },
-      { upsert: true } // Creates a record if not found
+      { upsert: true }
     );
 
     await sendOtpEmail(email, otp);
@@ -222,19 +224,13 @@ export async function editUserDetails(req, res) {
       !pinCode ||
       !address
     ) {
-      return res.status(400).json({
-        status: false,
-        message: "All fields are required",
-      });
+      return res.send({ status: true, message: "All fields are required" });
     }
 
     // Find the user and update details
     const user = await users.findById(userId);
     if (!user) {
-      return res.status(404).json({
-        status: false,
-        message: "User not found",
-      });
+      return res.send({ status: false, message: "User not found" });
     }
 
     // Update the user's details
@@ -249,54 +245,229 @@ export async function editUserDetails(req, res) {
     await user.save();
 
     console.log(`User details updated successfully for userId: ${userId}`);
-    res.status(200).json({
-      status: true,
-      message: "User details updated successfully",
-    });
+
+    res.send({ status: true, message: "User details updated successfully" });
   } catch (error) {
     console.log(`userController : editUserDetails : error : ${error}`);
-    res.status(500).json({
+    res.send({
       status: false,
       message: "Something went wrong while updating details",
     });
   }
 }
 
+// reset Password
+export async function resetPassword(req, res) {
+  console.log(`userController : reset Password called`);
+  const { userId, currentPassword, newPassword, confirmPassword } = req.body;
+  try {
+    // current password + bcrypt.hash
+    // new password + bcrypt.hash
+    // confirm password + bcrypt.hash
+    // Validate input fields
+    if (!userId || !currentPassword || !newPassword || !confirmPassword) {
+      return res.send({ status: true, message: "All fields are required" });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.send({
+        status: false,
+        message: "New password and confirm password do not match",
+      });
+    }
+
+    // Find the user by userId
+    const user = await users.findById(userId);
+    if (!user) {
+      return res.send({
+        status: false,
+        message: "User not found",
+      });
+    }
+
+    // Validate the current password
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+    if (!isPasswordValid) {
+      return res.send({
+        status: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    // Hash the new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the password in the database
+    user.password = hashedNewPassword;
+    await user.save();
+
+    console.log(`Password updated successfully for userId: ${userId}`);
+    res.send({
+      status: true,
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    console.log(`userController : reset Password : error : ${error}`);
+
+    res.send({
+      status: false,
+      message: "Something went wrong while reseting Password",
+    });
+  }
+}
+
+// reset Digital Pin
+export async function resetDigitalPin(req, res) {
+  // currentPin bcrypt.hash or currentPassword + bcrypt.hash,
+  // userId
+  // method: resetMethod,
+  // credential: currentCredential + bcrypt.hash,
+  // newPin + bcrypt.hash,
+  const { userId, method, credential, newPin } = req.body;
+
+  // Check if all required fields are provided
+  if (!userId || !method || !credential || !newPin) {
+    return res.send({ status: false, message: "All fields are required." });
+  }
+
+  try {
+    // Find user by ID
+    const user = await users.findById(userId);
+    if (!user) {
+      return res.send({ status: false, message: "User not found." });
+    }
+
+    let isCredentialValid = false;
+
+    // Check the method (pin or password)
+    if (method === "pin") {
+      // Validate the current pin
+      isCredentialValid = await bcrypt.compare(credential, user.digitalPin);
+    } else if (method === "password") {
+      // Validate the current password
+      isCredentialValid = await bcrypt.compare(credential, user.password);
+    } else {
+      return res.send({ status: false, message: "Invalid reset method." });
+    }
+
+    // If the current credential is invalid
+    if (!isCredentialValid) {
+      return res.send({
+        status: false,
+        message: "Current credential is incorrect.",
+      });
+    }
+
+    // Validate the new pin
+    if (newPin.length < 4) {
+      return res.send({ status: false, message: "New Pin must be 4 digits." });
+    }
+
+    // Hash the new pin
+    const hashedNewPin = await bcrypt.hash(newPin, 10);
+
+    // Update the user's digital pin in the database
+    if (method === "pin") {
+      user.digitalPin = hashedNewPin;
+    } else if (method === "password") {
+      user.digitalPin = hashedNewPin;
+    }
+
+    // Save the user with the updated pin
+    await user.save();
+
+    // Send success response
+    return res.send({
+      status: true,
+      message: "Digital Pin reset successfully!",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.send({
+      status: false,
+      message: "An error occurred while resetting the pin. Please try again.",
+    });
+  }
+}
+
+// request forgot password otp
+export async function requestForgotPasswordOtp(req, res) {
+  const { email } = req.body;
+  console.log(`backend : user Controller : request-Otp`);
+  try {
+    const otp = GenerateNewPassword();
+    const otpExpiration = Date.now() + 10 * 60 * 1000;
+
+    await users.updateOne(
+      { email: email },
+      { tempOtp: otp, otpExpiration },
+      { upsert: true }
+    );
+
+    await sendPasswordEmail(email, otp);
+    res.send({ status: true, message: "OTP sent to email." });
+  } catch (error) {
+    console.log("Error in requestOtp:", error);
+    res.send({ status: false, message: "OTP request failed." });
+  }
+}
+
+// verify forgot password otp
+export async function verifyForgotPasswordOtp(req, res) {
+  console.log(`backend : user Controller : verify-Otp`);
+  const { email, otp } = req.body;
+  console.log(req.body);
+  try {
+    const user = await users.findOne({ email: email, tempOtp: otp });
+    console.log(`backend : user Controller : verify-Otp : user : ${user}`);
+    if (!user || user.otpExpiration < Date.now()) {
+      return res.send({ status: false, message: "Invalid or expired OTP." });
+    }
+
+    await users.updateOne(
+      { email },
+      { otp: null, otpExpiration: null } // Clear OTP after verification
+    );
+    res.send({ status: true, message: "OTP verified successfully." });
+  } catch (error) {
+    console.log("Error in verifyOtp:", error);
+    res.send({ status: false, message: "OTP verification failed." });
+  }
+}
+
 // forgot password
 export async function forgotPasswordController(req, res) {
   console.log(`userController : forgot password`);
-  const { email, accountNumber, newPassword } = req.body;
+  const { email, password } = req.body;
 
   try {
-    // Find the user by email or account number
-    const user = await users.findOne({
-      $or: [{ email }, { accountNumber }],
-    });
+    const user = await users.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({
+      return res.send({
         status: false,
         message: "User not found. Please check your details.",
       });
     }
 
     // Hash the new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Update the password
     user.password = hashedPassword;
     await user.save();
 
     console.log("Password reset successful");
-    res.status(200).json({
+    res.send({
       status: true,
       message: "Password reset successful",
     });
   } catch (error) {
-    console.log(
-      `userController : forgot password controller : error : ${error}`
-    );
-    res.status(500).json({
+    console.log(`userController : forgot password controller : error : ${error}`);
+    res.send({
       status: false,
       message: "Something went wrong while resetting the password.",
     });

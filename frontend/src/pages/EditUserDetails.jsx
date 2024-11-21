@@ -3,11 +3,12 @@ import { useSelector } from "react-redux";
 import { userUrl } from "../api/URL";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export default function EditUserDetails() {
   // Access the user data from the Redux store
   const user = useSelector((state) => state.user.userData);
-
+  const Navigate = useNavigate();
   // Initialize state for form fields using user's current details
   const [formData, setFormData] = useState({
     firstName: user.firstName || "",
@@ -42,6 +43,7 @@ export default function EditUserDetails() {
         toast.success(
           response.data.message || "User details updated successfully!"
         );
+        Navigate("/ViewUserDetails");
       } else {
         toast.error(response.data.message || "Failed to update user details");
       }

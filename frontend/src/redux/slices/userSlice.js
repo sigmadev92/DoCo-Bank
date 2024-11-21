@@ -53,6 +53,7 @@ const userSlice = createSlice({
         state.userData = action.payload.data;
       }
     });
+    
     builders.addCase(fetchUserDetails.rejected, (state, action) => {
       console.log(state.loggedIn, action);
     });

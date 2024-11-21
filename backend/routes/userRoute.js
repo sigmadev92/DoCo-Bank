@@ -8,7 +8,11 @@ import {
   requestOtp,
   getCurrentUserDetails,
   verifyDigitalPin,
-  editUserDetails
+  editUserDetails,
+  resetPassword,
+  resetDigitalPin,
+  requestForgotPasswordOtp,
+  verifyForgotPasswordOtp,
 } from "../controllers/userController.js";
 // import authMiddleware from "../middleware/authMiddleware.js";
 import { upload } from "../library/Multer.js";
@@ -24,11 +28,17 @@ router.post("/register", upload.single("profilePhoto"), registerController);
 router.post("/login", loginController);
 // @ redux route
 router.get("/get-current-user-details/:userId", getCurrentUserDetails);
-
+// pin component
 router.post("/verifyDigitalPin", verifyDigitalPin);
 
 router.put("/editUserDetails", editUserDetails);
 
-router.post("/forgot-password", forgotPasswordController);
+router.put("/resetPassword", resetPassword);
+
+router.put("/resetDigitalPin", resetDigitalPin);
+
+router.post("/request-forgot-password-otp", requestForgotPasswordOtp);
+router.post("/verify-forgot-password-otp", verifyForgotPasswordOtp);
+router.put("/forgot-password", forgotPasswordController);
 
 export default router;
