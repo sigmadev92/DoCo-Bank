@@ -13,7 +13,29 @@ const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 const app = express();
 dotenv.config();
-app.use(cors({ origin: `http://localhost:3000` }));
+
+// app.use(cors({ origin: `http://localhost:3000` }));
+// CORS Configuration
+const corsOptions =
+  process.env.NODE_ENV === "production"
+    ? {
+        origin: [
+          "https://do-connect-bank.vercel.app",
+          "https://do-connect-bank-git-main-vaishali-jains-projects-76f29a1f.vercel.app",
+          "https://do-connect-bank-4y45s6pba-vaishali-jains-projects-76f29a1f.vercel.app",
+        ],
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        credentials: true,
+      }
+    : {
+        origin: ["http://localhost:3000"],
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        credentials: true,
+      };
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // Handle preflight requests
+
 dbConnection();
 
 app.use(express.json());
