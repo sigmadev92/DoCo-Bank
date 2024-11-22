@@ -16,25 +16,19 @@ dotenv.config();
 
 // app.use(cors({ origin: `http://localhost:3000` }));
 // CORS Configuration
-const corsOptions =
-  process.env.NODE_ENV === "production"
-    ? {
-        origin: [
-          "https://do-connect-bank.vercel.app",
-          "https://do-connect-bank-git-main-vaishali-jains-projects-76f29a1f.vercel.app",
-          "https://do-connect-bank-4y45s6pba-vaishali-jains-projects-76f29a1f.vercel.app",
-        ],
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        credentials: true,
-      }
-    : {
-        origin: ["http://localhost:3000"],
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        credentials: true,
-      };
+const corsOptions = {
+  origin: [
+    "http://localhost:3000", // For local development
+    "https://do-connect-bank.vercel.app", // Production frontend domain
+    "https://do-connect-bank-git-main-vaishali-jains-projects-76f29a1f.vercel.app",
+    "https://do-connect-bank-4y45s6pba-vaishali-jains-projects-76f29a1f.vercel.app",
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow these HTTP methods
+  credentials: true, // Include cookies and auth headers if needed
+};
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // Handle preflight requests
+
 
 dbConnection();
 
