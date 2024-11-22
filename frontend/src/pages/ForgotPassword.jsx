@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { userUrl } from "../api/URL";
 import { toast } from "react-toastify";
+import {
+  requestForgotPasswordOtp,
+  resetForgotPassword,
+  verifyForgotPasswordOtp,
+} from "../api/UserFunction";
 
 export default function ForgotPassword() {
   // State Variables
@@ -18,74 +21,83 @@ export default function ForgotPassword() {
     useState(false);
   const Navigate = useNavigate();
 
-  // Handlers
+  // Handlers for form data
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // get otp
   const handleGetOtp = async () => {
     try {
-      const response = await axios.post(
-        `${userUrl}/request-forgot-password-otp`,
-        { email: formData.email }
-      );
-      if (response.data.status) {
-        setForgotPasswordOtpRequested(true);
+      // Request OTP via API call
+      const response = await requestForgotPasswordOtp(formData.email);
+
+      // Handle response based on status
+      if (response.status) {
+        setForgotPasswordOtpRequested(true); // Enable OTP input or transition to next step
         toast.success("OTP has been sent to your email!");
       } else {
-        toast.error(response.data.message);
+        toast.error(response.message || "Failed to request OTP.");
       }
     } catch (error) {
+      // Handle errors
       console.log("Error sending OTP:", error);
       toast.error("Failed to send OTP. Please try again.");
     }
   };
 
+  // verify otp
   const handleVerifyOtp = async () => {
     try {
-      const response = await axios.post(
-        `${userUrl}/verify-forgot-password-otp`,
-        { email: formData.email, otp }
-      );
-      if (response.data.status) {
-        setForgotPasswordOtpVerified(true);
+      // Verify OTP via API call
+      const response = await verifyForgotPasswordOtp(formData.email, otp);
+
+      // Handle response based on status
+      if (response.status) {
+        setForgotPasswordOtpVerified(true); // Proceed to the next step
         toast.success("OTP verified successfully!");
       } else {
-        toast.error(response.data.message);
+        toast.error(response.message || "Failed to verify OTP.");
       }
     } catch (error) {
+      // Handle errors
       console.log("Error verifying OTP:", error);
       toast.error("Failed to verify OTP. Please try again.");
     }
   };
 
+  // saving new password in the database
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate OTP verification status
     if (!forgotPasswordOtpVerified) {
       toast.error("Please verify OTP before resetting your password.");
       return;
     }
 
     const { password, confirmPassword } = formData;
+
+    // Validate that passwords match
     if (password !== confirmPassword) {
       toast.error("Passwords do not match!");
       return;
     }
 
     try {
-      const response = await axios.put(`${userUrl}/forgot-password`, {
-        email: formData.email,
-        password,
-      });
+      // Reset password via API call
+      const response = await resetForgotPassword(formData.email, password);
 
-      if (response.data.status) {
+      // Handle response based on status
+      if (response.status) {
         toast.success("Password reset successful!");
-        Navigate("/login");
+        Navigate("/login"); // Redirect to login page
       } else {
-        toast.error(response.data.message);
+        toast.error(response.message || "Failed to reset password.");
       }
     } catch (error) {
+      // Handle errors
       console.log("Error resetting password:", error);
       toast.error("Failed to reset password. Please try again.");
     }

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LoginUser } from "../api/LoginFunction";
+import { LoginUser } from "../api/UserFunction";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { setAuth } from "../redux/slices/userSlice";
@@ -36,6 +36,7 @@ export default function Login() {
     event.preventDefault();
     console.log("handleLoginSubmit");
     try {
+      // LoginUser -> api/UserFunction.js
       const response = await LoginUser(loginFormData);
       if (response.status) {
         console.log(response.userData._id);

@@ -1,26 +1,13 @@
-bank server
+"DOCO-BANK OVERVIEW"
+banking functionality 
+1. user -> register, login, forgot-password, edit-user-details, view-user-details, reset-password, reset-digital-pin, logout
+2. account -> view balance, withdraw, deposit, transfer, trasaction history, 
 
-1. account create
-2. transaction - debit and credit ->
-3. update account details + 
-4. delete account 
-5. view account 
-6. Add money to self account 
-7. view balance
-
-Authentication and authorization - mail and number -> passport and jwt, nodemailer 
+Authentication and authorization - (nodemailer) email and otp generation -> jwt, bcrypt,
 
 --> Schema
 1. User details -> name, email, phone Number, Account Number, Balance 
 2. Transaction record -> debit and credit in each accounts  
 
-
-
-
-
-
-
-
 ----------------------------------------------------------------------------------
 Deployement Steps!
- 

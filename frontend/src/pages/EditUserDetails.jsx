@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import { userUrl } from "../api/URL";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { editUserDetails } from "../api/UserFunction";
 
 export default function EditUserDetails() {
   // Access the user data from the Redux store
@@ -27,28 +26,32 @@ export default function EditUserDetails() {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
-
+  // handle submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Updated User Details:", formData);
 
-    try {
-      // Include the userId in the request body (from Redux or another source)
-      const response = await axios.put(`${userUrl}/editUserDetails`, {
-        userId: user._id, // Assuming `user` is retrieved from Redux
-        ...formData,
-      });
+    if (!user || !user._id) {
+      toast.error("User ID is missing. Please try again.");
+      return;
+    }
 
-      if (response.data.status) {
-        toast.success(
-          response.data.message || "User details updated successfully!"
-        );
+    try {
+      console.log("handleSubmit: Sending update request to helper function...");
+
+      // Call the helper function to update user details
+      const response = await editUserDetails(user._id, formData);
+
+      if (response.status) {
+        console.log("handleSubmit: User details updated successfully.");
+        toast.success(response.message || "User details updated successfully!");
         Navigate("/ViewUserDetails");
       } else {
-        toast.error(response.data.message || "Failed to update user details");
+        console.error("handleSubmit: Update failed:", response.message);
+        toast.error(response.message || "Failed to update user details.");
       }
     } catch (error) {
-      console.error("Error updating user details:", error);
+      console.error("handleSubmit: Unexpected error:", error);
       toast.error("Something went wrong. Please try again.");
     }
   };
@@ -63,21 +66,6 @@ export default function EditUserDetails() {
 
         {/* Edit Form */}
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Account Number
-          <div className="flex flex-col">
-            <label htmlFor="accountNumber" className="font-bold text-gray-700">
-              Account Number
-            </label>
-            <input
-              type="text"
-              id="accountNumber"
-              name="accountNumber"
-              value={formData.accountNumber}
-              onChange={handleChange}
-              className="p-2 border rounded"
-              required
-            />
-          </div>  */}
           {/* First Name */}
           <div className="flex flex-col">
             <label htmlFor="firstName" className="font-bold text-gray-800">
@@ -109,22 +97,6 @@ export default function EditUserDetails() {
               required
             />
           </div>
-
-          {/* Email */}
-          {/* <div className="flex flex-col">
-            <label htmlFor="email" className="font-bold text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="p-2 border rounded"
-              required
-            />
-          </div> */}
 
           {/* Phone Number */}
           <div className="flex flex-col">

@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { userUrl } from "../api/URL";
 import { toast } from "react-toastify";
+import { resetDigitalPin } from "../api/UserFunction";
 
 export default function DigitalPin() {
   // Access user data from Redux
@@ -22,15 +21,17 @@ export default function DigitalPin() {
     e.preventDefault();
 
     if (!currentCredential || !newPin || !confirmPin) {
-      toast.error("All fields are required.");
-      setMessage("All fields are required.");
+      const error = "All fields are required.";
+      toast.info(error);
+      setMessage(error);
       return;
     }
 
     // Basic validation
     if (newPin !== confirmPin) {
-      toast.error("New Pin and Confirm Pin do not match.");
-      setMessage("New Pin and Confirm Pin do not match.");
+      const error = "New Pin and Confirm Pin do not match.";
+      toast.error(error);
+      setMessage(error);
       return;
     }
 
@@ -38,29 +39,32 @@ export default function DigitalPin() {
       setLoading(true);
       setMessage("");
 
-      // Make API request
-      const response = await axios.put(`${userUrl}/resetDigitalPin`, {
-        userId: user.userData?._id,
-        method: resetMethod,
-        credential: currentCredential,
-        newPin,
-      });
+      console.log("handleResetPin: Sending request to reset digital pin...");
 
-      if (response.status === 200) {
-        toast.success("Digital Pin reset successfully!");
-        setMessage("Digital Pin reset successfully!");
+      // Call the helper function
+      const response = await resetDigitalPin(
+        user.userData?._id,
+        resetMethod,
+        currentCredential,
+        newPin
+      );
+
+      if (response.status) {
+        toast.success(response.message || "Digital Pin reset successfully!");
+        setMessage(response.message || "Digital Pin reset successfully!");
         setTimeout(() => {
           navigate("/");
         }, 2000);
       } else {
-        toast.error("Failed to reset digital pin.");
-        setMessage(response.data.message || "Failed to reset digital pin.");
+        const errorMessage = response.message || "Failed to reset digital pin.";
+        toast.error(errorMessage);
+        setMessage(errorMessage);
       }
     } catch (error) {
-      toast.error("An error occurred. Please try again.");
-      setMessage(
-        error.response?.data?.message || "An error occurred. Please try again."
-      );
+      console.error("handleResetPin: Unexpected error:", error);
+      const errorMessage = "An error occurred. Please try again.";
+      toast.error(errorMessage);
+      setMessage(errorMessage);
     } finally {
       setLoading(false);
     }

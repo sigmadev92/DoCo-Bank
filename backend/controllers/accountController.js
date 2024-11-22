@@ -10,7 +10,7 @@ export const deposit = async (req, res) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.send({ status: false, message: "User not found" });
     }
 
     user.balance += amount;
@@ -42,7 +42,7 @@ export const withdraw = async (req, res) => {
   const { userId, amount } = req.body;
   try {
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.send({ status: false, message: "User not found" });
     if (user.balance < amount)
       return res.status(400).json({ message: "Insufficient balance" });
 
@@ -59,11 +59,13 @@ export const withdraw = async (req, res) => {
     await user.save();
     await transaction.save();
 
-    res
-      .status(200)
-      .json({ message: "Withdrawal successful", balance: user.balance });
+    res.send({
+      status: true,
+      message: "Withdrawal successful",
+      balance: user.balance,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error during withdrawal", error });
+    res.send({ status: false, message: "Error during withdrawal", error });
   }
 };
 
@@ -74,18 +76,18 @@ export const transfer = async (req, res) => {
 
   try {
     const fromUser = await User.findById(fromUserId);
-    const toUser = await User.findOne({ email: recipientEmail }); 
+    const toUser = await User.findOne({ email: recipientEmail });
 
     if (!fromUser) {
-      return res.status(404).json({ message: "Sender not found" });
+      return res.send({ status: false, message: "Sender not found" });
     }
 
     if (!toUser) {
-      return res.status(404).json({ message: "Recipient not found" });
+      return res.send({ status: false, message: "Recipient not found" });
     }
 
     if (fromUser.balance < amount) {
-      return res.status(400).json({ message: "Insufficient balance" });
+      return res.send({ status: false, message: "Insufficient balance" });
     }
 
     fromUser.balance -= amount;
@@ -112,10 +114,10 @@ export const transfer = async (req, res) => {
     await fromTransaction.save();
     await toTransaction.save();
 
-    res.status(200).json({ message: "Transfer successful" });
+    res.send({ status: true, message: "Transfer successful" });
   } catch (error) {
-    console.error("Error during transfer:", error);
-    res.status(500).json({ message: "Error during transfer", error });
+    console.log("Error during transfer:", error);
+    res.send({ status: false, message: "Error during transfer", error });
   }
 };
 
@@ -126,7 +128,7 @@ export const viewBalance = async (req, res) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      const response = res.status(404).json({ message: "User not found" });
+      const response = res.send({ status: false, message: "User not found" });
       return response;
     }
     res.send({ status: true, balance: user.balance });
@@ -150,7 +152,7 @@ export const miniStatement = async (req, res) => {
     }
     res.send({ status: true, data: transactions });
   } catch (error) {
-    console.error("Error fetching mini statement:", error);
+    console.log("Error fetching mini statement:", error);
     res.send({
       status: false,
       message: "Error fetching mini statement",

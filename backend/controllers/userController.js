@@ -385,7 +385,7 @@ export async function resetDigitalPin(req, res) {
       message: "Digital Pin reset successfully!",
     });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     return res.send({
       status: false,
       message: "An error occurred while resetting the pin. Please try again.",

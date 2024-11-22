@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import dbConnection from "./config/dbConfig.js";
 import userRouter from "./routes/userRoute.js";
 import accountRouter from "./routes/accountRoute.js";
-import pinRouter from "./routes/pinRoute.js";
+
 import errorHandler from "./middleware/errorHandler.js";
 import cors from "cors";
 import path from "path";
@@ -20,6 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/images", express.static(path.join(__dirname, "Images")));
 app.use(express.static("Images"));
+
 // Testing endpoint
 app.get("/", (req, res) => {
   res.send(`Backend : app.js : Testing`);
@@ -28,7 +29,6 @@ app.get("/", (req, res) => {
 // Route setup
 app.use("/user", userRouter);
 app.use("/account", accountRouter);
-// app.use("/pin", pinRouter);
 
 // Error handling middleware
 app.use(errorHandler);

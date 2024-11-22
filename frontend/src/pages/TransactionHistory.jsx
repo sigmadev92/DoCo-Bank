@@ -40,7 +40,7 @@ export default function TransactionHistory() {
         setError("Unable to fetch transactions. Try again later.");
       }
     } catch (err) {
-      console.error("Error fetching transactions:", err);
+      console.log("Error fetching transactions:", err);
       setError("Failed to fetch transactions. Please try again later.");
     }
     setLoading(false);
@@ -84,8 +84,12 @@ export default function TransactionHistory() {
                     Date
                   </th>
                   <th className="px-4 py-2 text-navy-blue font-semibold text-base lg:text-lg sm:text-xs md:text-md">
+                    Time
+                  </th>
+                  <th className="px-4 py-2 text-navy-blue font-semibold text-base lg:text-lg sm:text-xs md:text-md">
                     Type
                   </th>
+
                   <th className="px-4 py-2 text-navy-blue font-semibold text-base lg:text-lg sm:text-xs md:text-md">
                     Amount (₹)
                   </th>
@@ -105,15 +109,20 @@ export default function TransactionHistory() {
                         {new Date(transaction.date).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-2 text-navy-blue text-base lg:text-lg sm:text-xs md:text-md">
+                        {new Date(transaction.date).toLocaleTimeString()}
+                      </td>
+                      <td className="px-4 py-2 text-navy-blue text-base lg:text-lg sm:text-xs md:text-md">
                         {transaction.type.charAt(0).toUpperCase() +
                           transaction.type.slice(1)}
                       </td>
+                     
                       <td className="px-4 py-2 text-navy-blue text-base lg:text-lg sm:text-xs md:text-md">
                         ₹{transaction.amount.toFixed(2)}
                       </td>
                       <td className="px-4 py-2 text-navy-blue text-base lg:text-lg sm:text-xs md:text-md">
                         ₹{transaction.balanceAfterTransaction.toFixed(2)}
                       </td>
+                      
                       <td className="px-4 py-2 text-navy-blue text-base lg:text-lg sm:text-xs md:text-md">
                         {transaction.description}
                       </td>

@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { userUrl } from "../api/URL";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import { toast } from "react-toastify";
+import { resetPassword } from "../api/UserFunction";
 export default function PasswordReset() {
   // Access user data and dispatch function from Redux
   const user = useSelector((state) => state.user);
@@ -23,46 +22,52 @@ export default function PasswordReset() {
     e.preventDefault(); // Prevent default form submission behavior
     setErrorMessage("");
     setSuccessMessage("");
+
     // Basic input validation
     if (!currentPassword || !newPassword || !confirmPassword) {
-      toast.error("All fields are required.");
-      setErrorMessage("All fields are required.");
+      const error = "All fields are required.";
+      toast.error(error);
+      setErrorMessage(error);
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("New password and confirm password do not match.");
-      setErrorMessage("New password and confirm password do not match.");
+      const error = "New password and confirm password do not match.";
+      toast.error(error);
+      setErrorMessage(error);
       return;
     }
 
     try {
-      // Make the API call to reset the password
-      const response = await axios.put(`${userUrl}/resetPassword`, {
-        userId: user.userData?._id,
+      console.log("handlePasswordReset: Sending request to reset password...");
+
+      // Call the helper function to reset the password
+      const response = await resetPassword(
+        user.userData?._id,
         currentPassword,
         newPassword,
-        confirmPassword,
-      });
+        confirmPassword
+      );
 
-      if (response.data.status) {
+      if (response.status) {
         toast.success("Password updated successfully");
-        setSuccessMessage(response.data.message);
+        setSuccessMessage(response.message || "Password updated successfully!");
         setErrorMessage("");
-        setTimeout(() => navigate("/home"), 2000);
+        setTimeout(() => navigate("/"), 2000);
       } else {
-        toast.error("Error during password reset");
-        setErrorMessage(response.data.message);
+        toast.error(response.message || "Error during password reset");
+        setErrorMessage(response.message || "Error during password reset.");
         setSuccessMessage("");
       }
     } catch (error) {
-      toast.error("Error during password reset");
-      console.log("Error during password reset:", error);
-      setErrorMessage("Something went wrong. Please try again.");
+      console.error("handlePasswordReset: Unexpected error:", error);
+      const errorMessage = "Something went wrong. Please try again.";
+      toast.error(errorMessage);
+      setErrorMessage(errorMessage);
       setSuccessMessage("");
     }
   };
-  
+
   return (
     <div className="h-[79.91vh] flex items-center justify-center bg-gray-100 overflow-y-auto">
       <div className="bg-white p-4 sm:p-6 md:p-8 rounded shadow-md w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">

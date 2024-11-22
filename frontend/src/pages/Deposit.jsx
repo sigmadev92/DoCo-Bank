@@ -1,10 +1,9 @@
-import axios from "axios";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import { accountUrl } from "../api/URL";
 import { deposit_BALANCE } from "../redux/slices/userSlice";
+import { depositMoney } from "../api/AccountFunction";
 export default function Deposit() {
   // Local state for deposit amount and feedback messages
   const [depositAmount, setDepositAmount] = useState("");
@@ -17,19 +16,22 @@ export default function Deposit() {
   // Handle deposit submission
   const handleDeposit = async (event) => {
     event.preventDefault();
+
+    // Validate the deposit amount
+    const amount = parseFloat(depositAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.info("Please enter a valid deposit amount.");
+      setMessage("Please enter a valid deposit amount.");
+      return;
+    }
+
     try {
-      const amount = parseFloat(depositAmount);
-      if (isNaN(amount) || amount <= 0) {
-        setMessage("Please enter a valid deposit amount.");
-        return;
-      }
-      //  userId, amount -> require
-      const response = await axios.post(`${accountUrl}/deposit`, {
-        userId: user.userData._id,
-        amount: amount,
-      });
-      if (response.data.status) {
-        setDepositAmount("");
+      // Call the deposit API
+      const response = await depositMoney(user.userData._id, amount);
+
+      // Handle the API response based on status
+      if (response.status) {
+        setDepositAmount(""); // Reset deposit amount input field
         dispatch(
           deposit_BALANCE({ New_amount: user.userData.balance + amount })
         );
@@ -37,7 +39,8 @@ export default function Deposit() {
         setMessage(`Successfully deposited ₹${amount.toFixed(2)}!`);
       }
     } catch (error) {
-      toast.error("Something went Wrong!");
+      // Handle errors from the API call
+      toast.error("Something went wrong!");
       console.log(error);
     }
   };

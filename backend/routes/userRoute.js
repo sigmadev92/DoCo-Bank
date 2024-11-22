@@ -14,7 +14,6 @@ import {
   requestForgotPasswordOtp,
   verifyForgotPasswordOtp,
 } from "../controllers/userController.js";
-// import authMiddleware from "../middleware/authMiddleware.js";
 import { upload } from "../library/Multer.js";
 
 const router = express.Router();

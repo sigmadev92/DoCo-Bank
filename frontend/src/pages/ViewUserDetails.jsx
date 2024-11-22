@@ -13,10 +13,8 @@ export default function ViewUserDetails() {
     : "";
 
   useEffect(() => {
-    
     // Check if user data is loaded
     if (user?.userData) {
-      
       setLoading(false);
     }
   }, [user]);

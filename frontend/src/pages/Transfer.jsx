@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import axios from "axios";
-import { accountUrl } from "../api/URL"; // Adjust import path as needed
 import { Transfer_BALANCE } from "../redux/slices/userSlice"; // Adjust import path as needed
+import { toast } from "react-toastify";
+import { transferMoney } from "../api/AccountFunction";
 
 export default function Transfer() {
   const user = useSelector((state) => state.user.userData); // Get user data from Redux store
@@ -17,30 +17,38 @@ export default function Transfer() {
   const handleTransfer = async (e) => {
     e.preventDefault();
 
+    // Validate the transfer amount
     const transferAmount = parseFloat(amount);
     if (isNaN(transferAmount) || transferAmount <= 0) {
+      toast.info("Please enter a valid transfer amount.");
       setMessage("Please enter a valid transfer amount.");
       return;
     }
 
+    // Check for sufficient balance
     if (transferAmount > user.balance) {
+      toast.info("Insufficient balance.");
       setMessage("Insufficient balance.");
       return;
     }
 
+    // Validate recipient email format
     if (!recipientEmail || !/\S+@\S+\.\S+/.test(recipientEmail)) {
       setMessage("Please enter a valid recipient email.");
+      toast.info("Please enter a valid recipient email.");
       return;
     }
 
-    setLoading(true);
+    setLoading(true); // Show loading indicator during the transfer process
     try {
-      const response = await axios.post(`${accountUrl}/transfer`, {
-        fromUserId: user._id,
-        recipientEmail, // Pass email instead of user ID
-        amount: transferAmount,
-      });
+      // Call the transfer API
+      const response = await transferMoney(
+        user._id,
+        recipientEmail,
+        transferAmount
+      );
 
+      // Handle the response from the API
       if (response.data && response.data.message === "Transfer successful") {
         dispatch(
           Transfer_BALANCE({
@@ -53,16 +61,19 @@ export default function Transfer() {
             2
           )} to ${recipientEmail}.`
         );
-        setRecipientEmail("");
-        setAmount("");
+        setRecipientEmail(""); // Reset recipient email
+        setAmount(""); // Reset transfer amount input
+        toast.success("Transfer successful");
       } else {
         setMessage(response.data.message || "Transfer failed.");
       }
     } catch (error) {
+      // Handle any errors that occur during the transfer process
       console.error("Transfer error:", error);
+      toast.error("An error occurred during the transfer. Please try again.");
       setMessage("An error occurred during the transfer. Please try again.");
     } finally {
-      setLoading(false);
+      setLoading(false); // Hide loading indicator after the process completes
     }
   };
 

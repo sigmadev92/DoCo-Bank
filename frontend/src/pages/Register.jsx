@@ -1,8 +1,7 @@
-import React, {  useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { userUrl } from "../api/URL";
-import axios from "axios";
+import { registerUser, requestOtp, verifyOtp } from "../api/UserFunction";
 
 export default function Register() {
   const [step, setStep] = useState(1);
@@ -34,61 +33,47 @@ export default function Register() {
       toast.error("Email is required!");
       return;
     }
+
     try {
-      const response = await fetch(`${userUrl}/request-otp`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: formData.email }),
-      });
+      // Call the helper function to request OTP
+      const response = await requestOtp(formData.email);
 
-      console.log(`register : handleGetOtp : response : ${response}`);
-
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-      const data = await response.json();
-      console.log(`register : handleGetOtp : data : ${data}`);
-      if (data.status) {
+      if (response.status) {
+        // Update UI state and notify the user
         setOtpRequested(true);
         toast.success("OTP sent to your email.");
       } else {
-        toast.error("Error sending OTP.");
+        toast.error(response.message || "Error sending OTP.");
       }
     } catch (error) {
-      console.log("Error requesting OTP:", error);
+      console.error("Error in handleGetOtp:", error);
       toast.error("Error requesting OTP.");
     }
   };
 
   // Function to verify OTP
   const handleVerifyOtp = async () => {
+    if (!formData.email || !otp) {
+      toast.error("Email and OTP are required!");
+      return;
+    }
+
     try {
-      const response = await fetch(`${userUrl}/verify-otp`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: formData.email, otp }),
-      });
-      console.log(`register : handleVerifyOtp : response : `, otp);
-      console.log(`register : handleVerifyOtp : response : ${response}`);
+      // Call the helper function to verify OTP
+      const response = await verifyOtp(formData.email, otp);
 
-      const data = await response.json();
-      console.log(`register : handleVerifyOtp : data : ${data}`);
-
-      if (data.status) {
+      if (response.status) {
+        // Update UI state and notify the user
         setOtpVerified(true);
         console.log("OTP verified successfully.");
         toast.success("OTP verified successfully.");
       } else {
         console.log("Invalid or expired OTP.");
-        toast.error("Invalid or expired OTP.");
+        toast.error(response.message || "Invalid or expired OTP.");
       }
     } catch (error) {
-      console.log("Error verifying OTP:", error);
-      toast.error("Error verifying OTP:", error);
+      console.error("Error in handleVerifyOtp:", error);
+      toast.error("Error verifying OTP. Please try again.");
     }
   };
 
@@ -103,10 +88,6 @@ export default function Register() {
       };
     });
   }
-
-  // useEffect(() => {
-  //   console.log("Updated formData:", formData);
-  // }, [formData]);
 
   const validate = () => {
     const newErrors = {};
@@ -130,7 +111,7 @@ export default function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // In Register.js (frontend component)
+  // registration details saving in database
   async function handleSubmit(event) {
     event.preventDefault();
     console.log("handleSubmit: Starting form submission...");
@@ -167,28 +148,26 @@ export default function Register() {
     }
 
     try {
-      console.log("handleSubmit: Sending form data to backend...");
+      console.log("handleSubmit: Sending form data to helper function...");
 
-      const response = await axios.post(
-        `${userUrl}/register`,
-        formDataToSubmit
-      );
+      // Call the helper function to register the user
+      const response = await registerUser(formDataToSubmit);
 
-      if (response.data.status) {
+      if (response.status) {
         console.log("handleSubmit: Registration successful.");
         toast.success("Registered Successfully!");
         Navigate("/login");
       } else {
         console.log(
-          `handleSubmit: Registration failed. Message: ${response.data.message}`
+          `handleSubmit: Registration failed. Message: ${response.message}`
         );
         toast.error(
-          `Email or Phone Number already registered. ${response.data.message}`
+          `Email or Phone Number already registered. ${response.message}`
         );
       }
     } catch (error) {
-      console.log("handleSubmit: Error during registration:", error);
-      toast.error("Pineline error! Please try again.");
+      console.error("handleSubmit: Unexpected error:", error);
+      toast.error("Pipeline error! Please try again.");
     }
   }
 

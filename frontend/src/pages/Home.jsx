@@ -51,7 +51,7 @@ export default function Home() {
         toast.error("Incorrect digital pin");
       }
     } catch (error) {
-      console.error("Error verifying digital pin:", error);
+      console.log("Error verifying digital pin:", error);
       toast.error("An error occurred while verifying the digital pin");
     }
 
