@@ -114,7 +114,7 @@ export const transfer = async (req, res) => {
     await fromTransaction.save();
     await toTransaction.save();
 
-    res.send({ status: true, message: "Transfer successful" });
+    res.send({ status: true });
   } catch (error) {
     console.log("Error during transfer:", error);
     res.send({ status: false, message: "Error during transfer", error });

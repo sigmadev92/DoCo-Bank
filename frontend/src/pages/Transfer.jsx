@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Transfer_BALANCE } from "../redux/slices/userSlice"; // Adjust import path as needed
 import { toast } from "react-toastify";
 import { transferMoney } from "../api/AccountFunction";
 
 export default function Transfer() {
-  const user = useSelector((state) => state.user.userData); // Get user data from Redux store
+  const user = useSelector((state) => state.user); // Get user data from Redux store
   const dispatch = useDispatch();
 
   const [recipientEmail, setRecipientEmail] = useState(""); // Use email for recipient
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const navigate = useNavigate();
   const handleTransfer = async (e) => {
     e.preventDefault();
 
@@ -26,14 +26,14 @@ export default function Transfer() {
     }
 
     // Check for sufficient balance
-    if (transferAmount > user.balance) {
+    if (transferAmount > user.userData.balance) {
       toast.info("Insufficient balance.");
       setMessage("Insufficient balance.");
       return;
     }
 
     // Validate recipient email format
-    if (!recipientEmail || !/\S+@\S+\.\S+/.test(recipientEmail)) {
+    if (!recipientEmail) {
       setMessage("Please enter a valid recipient email.");
       toast.info("Please enter a valid recipient email.");
       return;
@@ -43,13 +43,13 @@ export default function Transfer() {
     try {
       // Call the transfer API
       const response = await transferMoney(
-        user._id,
+        user.userData._id,
         recipientEmail,
         transferAmount
       );
 
       // Handle the response from the API
-      if (response.data && response.data.message === "Transfer successful") {
+      if (response.status) {
         dispatch(
           Transfer_BALANCE({
             Transfer_New_amount: user.balance - transferAmount,
@@ -64,8 +64,11 @@ export default function Transfer() {
         setRecipientEmail(""); // Reset recipient email
         setAmount(""); // Reset transfer amount input
         toast.success("Transfer successful");
+        navigate("/");
       } else {
-        setMessage(response.data.message || "Transfer failed.");
+        toast.error(`${response.message} : Transfer failed.`);
+        setMessage(`${response.message} : Transfer failed.`);
+        navigate("/");
       }
     } catch (error) {
       // Handle any errors that occur during the transfer process
@@ -92,7 +95,7 @@ export default function Transfer() {
           <p className="text-sm sm:text-base md:text-lg font-medium">
             Current Balance:{" "}
             <span className="text-green-600 font-semibold">
-              ₹{user?.balance?.toFixed(2) || "0.00"}
+              ₹{user.userData?.balance?.toFixed(2) || "0.00"}
             </span>
           </p>
         </div>

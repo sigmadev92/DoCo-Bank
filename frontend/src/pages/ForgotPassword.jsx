@@ -6,6 +6,7 @@ import {
   resetForgotPassword,
   verifyForgotPasswordOtp,
 } from "../api/UserFunction";
+import { useSelector } from "react-redux";
 
 export default function ForgotPassword() {
   // State Variables
@@ -20,6 +21,8 @@ export default function ForgotPassword() {
   const [forgotPasswordOtpVerified, setForgotPasswordOtpVerified] =
     useState(false);
   const Navigate = useNavigate();
+
+  const user = useSelector((state) => state.user);
 
   // Handlers for form data
   const handleChange = (e) => {
@@ -200,14 +203,16 @@ export default function ForgotPassword() {
         </button>
 
         {/* Link to Login */}
-        <div className="text-center mt-4 space-y-2">
-          <p className="text-xs sm:text-sm md:text-base">
-            Remembered your password?{" "}
-            <Link to="/login" className="text-navy-blue hover:underline">
-              Login here
-            </Link>
-          </p>
-        </div>
+        {!user.loggedIn && (
+          <div className="text-center mt-4 space-y-2">
+            <p className="text-xs sm:text-sm md:text-base">
+              Remembered your password?{" "}
+              <Link to="/login" className="text-navy-blue hover:underline">
+                Login here
+              </Link>
+            </p>
+          </div>
+        )}
       </form>
     </div>
   );

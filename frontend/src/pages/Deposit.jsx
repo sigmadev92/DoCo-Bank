@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { deposit_BALANCE } from "../redux/slices/userSlice";
 import { depositMoney } from "../api/AccountFunction";
@@ -12,7 +12,7 @@ export default function Deposit() {
   // Access user data and dispatch function from Redux
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
-
+  const navigate = useNavigate();
   // Handle deposit submission
   const handleDeposit = async (event) => {
     event.preventDefault();
@@ -37,6 +37,7 @@ export default function Deposit() {
         );
         toast.success(`Successfully deposited ₹${amount.toFixed(2)}!`);
         setMessage(`Successfully deposited ₹${amount.toFixed(2)}!`);
+        navigate("/");
       }
     } catch (error) {
       // Handle errors from the API call

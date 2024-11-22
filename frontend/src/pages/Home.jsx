@@ -62,15 +62,23 @@ export default function Home() {
     <div className="bg-white flex flex-col items-center">
       {/* Hero Section */}
       <div
-        className="w-[98%] h-[60vh] opacity-96 bg-cover mt-4 ml-4 mr-4 bg-center flex flex-col justify-center items-center text-center text-white"
+        className="w-[98%] h-[60vh] opacity-96 bg-cover mt-4 ml-4 mr-4 bg-center flex flex-col  text-white"
         style={{ backgroundImage: `url(${HeroCover})` }}
       >
-        <h1 className="text-md sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold mb-4 bg-black bg-opacity-55 py-1 px-2 text-yellow-50 mx-4">
+        <div className="h-full w-full bg-[#165ba078] justify-center items-center text-center pt-[140px]">
+          <h1 className="text-md sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold mb-4 py-1 px-2 text-yellow-50 mx-4">
+            Grow Your Wealth, Secure Your Health with DoCo Bank!
+          </h1>
+          <p className="text-sm sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-medium py-1 px-2 mx-4">
+            Your trusted partner in financial growth & security.
+          </p>
+        </div>
+        {/* <h1 className="text-md sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold mb-4 bg-black bg-opacity-55 py-1 px-2 text-yellow-50 mx-4">
           Grow Your Wealth, Secure Your Health with DoCo Bank!
         </h1>
-        <p className="text-sm sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-medium bg-black bg-opacity-55 py-1 px-2 mx-4">
+        <p className="text-sm sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-medium bg-[rgba(0,144,14311)] bg-opacity-55 py-1 px-2 mx-4">
           Your trusted partner in financial growth & security.
-        </p>
+        </p> */}
       </div>
 
       {/* Services Section */}
@@ -223,7 +231,6 @@ export default function Home() {
           />
         </div>
       )}
-      
     </div>
   );
 }

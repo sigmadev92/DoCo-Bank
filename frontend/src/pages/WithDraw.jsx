@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { WithDraw_BALANCE } from "../redux/slices/userSlice";
 import { toast } from "react-toastify";
 import { withdrawMoney } from "../api/AccountFunction";
@@ -8,6 +8,7 @@ import { withdrawMoney } from "../api/AccountFunction";
 export default function WithDraw() {
   const { userData } = useSelector((state) => state.user);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
@@ -18,12 +19,14 @@ export default function WithDraw() {
     // Validate the withdrawal amount
     const withdrawAmount = parseFloat(amount);
     if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
+      toast.info("Please enter a valid withdrawal amount.");
       setMessage("Please enter a valid withdrawal amount.");
       return;
     }
 
     // Check for sufficient balance
     if (withdrawAmount > userData.balance) {
+      toast.info("Insufficient balance.");
       setMessage("Insufficient balance.");
       return;
     }
@@ -33,7 +36,7 @@ export default function WithDraw() {
       const response = await withdrawMoney(userData._id, withdrawAmount);
 
       // Handle the response from the API
-      if (response.status === 200) {
+      if (response.status) {
         // Update the Redux state with the new balance
         dispatch(
           WithDraw_BALANCE({
@@ -41,9 +44,9 @@ export default function WithDraw() {
           })
         );
         toast.success(`Successfully withdrawn.`);
-        setAmount(""); // Reset the input field
-
+        setAmount("");
         setMessage(`Successfully withdrawn ₹${withdrawAmount.toFixed(2)}.`);
+        navigate("/");
       }
     } catch (error) {
       // Handle any errors during the withdrawal process
