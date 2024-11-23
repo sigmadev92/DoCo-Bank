@@ -19,9 +19,9 @@ dotenv.config();
 const corsOptions = {
   origin: [
     "http://localhost:3000", // For local development
-    "https://do-connect-bank.vercel.app", // Production frontend domain
+    "https://do-connect-bank-ten.vercel.app/", // Production frontend domain
     "https://do-connect-bank-git-main-vaishali-jains-projects-76f29a1f.vercel.app",
-    "https://do-connect-bank-4y45s6pba-vaishali-jains-projects-76f29a1f.vercel.app",
+    "https://do-connect-bank-lxt66go3r-vaishali-jains-projects-76f29a1f.vercel.app/",
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow these HTTP methods
   credentials: true, // Include cookies and auth headers if needed
